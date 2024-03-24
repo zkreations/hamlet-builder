@@ -4,6 +4,16 @@
 
 This package makes it easy to build a Blogger Template. It is used to build the Blogger template [Hamlet](https://github.com/zkreations/hamlet/), and all Blogger themes derived from it.
 
+## Features
+
+- Use Handlebars to compile HBS and XML files
+- Use Rollup to bundle JS files
+- Use PostCSS to process CSS files
+- Minify CSS and JS files using CleanCSS and Terser (Can be disabled)
+- You can use the Blogger language with some additional facilities
+- You can use configuration files to customize the build process (Optional)
+- Fast and easy to use
+
 ## Install
 
 ```bash
@@ -105,12 +115,14 @@ Use the helper in the template:
 
 ### Theme
 
-Add a `.themerc.json`, `theme.config.json` or create a folder `.config` with a file `themerc.json`. Also you can add the information in the `package.json` file using the `theme` key. Here is an example of configuration:
+Add a `.themerc`, `.themerc.json`, `theme.config.json` or create a folder `.config` with a file `themerc.json`. Also you can add the information in the `package.json` file using the `theme` key. Here is an example of configuration:
 
 ```json
 {
-  "name": "Hamlet",
-  "author": "zkreations"
+  "theme": {
+    "name": "Hamlet",
+    "author": "zkreations"
+  }
 }
 ```
 
@@ -120,6 +132,21 @@ The data will be the context of the Handlebars templates, so you can access them
 {{name}}
 {{author}}
 ```
+
+### Browserlist
+
+Add a `.browserslistrc` or add the information in the `package.json` file using the `browserslist` key. Here is an example of configuration:
+
+```json
+{
+  "browserslist": [
+    "last 2 versions",
+    "not dead"
+  ]
+}
+```
+
+More information about the Browserslist configuration, check the [Browserslist repository](https://github.com/browserslist/browserslist).
 
 
 ## Structure

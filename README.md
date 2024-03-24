@@ -46,7 +46,7 @@ npm run build
 
 ### Rollup
 
-Agregar un archivo `.rolluprc.js`, `rollup.config.js` o crea una carpeta `.config` con un archivo `rolluprc.js`. También puedes usar la extensión `.cjs` o `.mjs`. Aquí tienes un ejemplo de configuración:
+Add a `.rolluprc.js`, `rollup.config.js` or create a folder `.config` with a file `rolluprc.js`. You can also use the extension `.cjs` or `.mjs`. Here is an example of configuration:
 
 ```js
 import terser from "@rollup/plugin-terser"

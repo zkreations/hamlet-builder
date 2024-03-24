@@ -248,8 +248,8 @@ You can define variables with only the `name` attribute:
 The above will compile to:
 
 ```xml
-<b:variable name='test' description='test' type='string'/>
-<b:variable name='example' description='example' type='string' value='false'/>
+<Variable name='test' description='test' type='string'/>
+<Variable name='example' description='example' type='string' value='false'/>
 ```
 
 ### Widgets

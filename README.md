@@ -1,6 +1,6 @@
 # Hamlet-builder
 
-![Version](https://img.shields.io/npm/v/hamlet-builder) ![License](https://img.shields.io/npm/l/hamlet-builder)
+![V](https://img.shields.io/npm/v/hamlet-builder) ![L](https://img.shields.io/npm/l/hamlet-builder)
 
 This package makes it easy to build a Blogger Template. It is used to build the Blogger template [Hamlet](https://github.com/zkreations/hamlet/), and all Blogger themes derived from it.
 

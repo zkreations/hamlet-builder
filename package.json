@@ -16,7 +16,7 @@
   ],
   "keywords": [],
   "author": "zkreations <daniel@zkreations.com> (https://zkreations.com/)",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "devDependencies": {
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0"

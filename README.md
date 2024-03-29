@@ -3,7 +3,7 @@
 
 # Hamlet-builder
 
-<img src="static/hamlet-logo.png" align="left" />
+<img src="https://raw.githubusercontent.com/zkreations/hamlet-builder/main/static/hamlet-logo.png" align="left" />
 
 ![V](https://img.shields.io/npm/v/hamlet-builder) ![L](https://img.shields.io/npm/l/hamlet-builder)
 

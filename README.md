@@ -75,7 +75,7 @@ export default {
 ```
 
 > [!NOTE]
-> The `nodeResolve`, `commonjs` and `babel` plugins are used by default even if a configuration file is not specified.
+> The `babel` plugins are used by default if a configuration file is not specified.
 
 ### PostCSS
 
@@ -94,7 +94,7 @@ export default {
 ```
 
 > [!NOTE]
-> The `autoprefixer` plugin is used by default even if a configuration file is not specified.
+> The `autoprefixer` plugin is used by default if a configuration file is not specified.
 
 ### Handlebars
 

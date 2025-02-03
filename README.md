@@ -117,7 +117,7 @@ Use the helper in the template:
 ```
 
 > [!NOTE]
-> The helper `asset` is available by default even if a configuration file is not specified.
+> The helper `asset` and `currentYear` are available by default.
 
 ### Theme
 
@@ -164,7 +164,7 @@ The user is free to organize the files and folders as they wish, as the system w
 
 The system will search for `sass`, `scss` and `css` files to compile them. If the file name starts with an underscore `_`, it will be considered a partial file, for example:
 
-```bash	
+```bash
 ├── src
 │   ├── scss
 │   │   ├── _module.scss
@@ -191,7 +191,7 @@ The file `main.scss` or `main.css` will be the main file that will be compiled a
 
 The system will search for `js` files, however only those that end with `bundle.js` will be considered as main files, for example:
 
-```bash	
+```bash
 ├── src
 │   ├── js
 │   │   ├── module.js
@@ -232,7 +232,16 @@ You can create any number of partials and organize them as you wish, just make s
 {{> module}}
 ```
 
-You can also include files in your template using the `asset` helper:
+#### Helpers
+
+These helpers are defined by default in the system, and you can use them in your templates or override them in the Handlebars configuration file:
+
+| Helper | Description |
+| ------ | ----------- |
+| `asset` | Include the content of the file in the template |
+| `currentYear` | Include the current year |
+
+Example of use the `asset` helper:
 
 ```handlebars
 {{asset "dist/css/main.css"}}
@@ -242,12 +251,31 @@ You can also include files in your template using the `asset` helper:
 If the file is in the `node_modules` folder, you can omit the folder and use `~` to reference it:
 
 ```handlebars
-{{asset "~/tooltips/main.js"}}
+{{asset "~/tooltips/main.css"}}
 ```
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > Remember to use the `<style>` and `<script>` tags to include the CSS and JS files in your template.
 
+Example of use the `currentYear` helper:
+
+```handlebars
+{{currentYear}}
+```
+
+#### Partials
+
+There are predefined partials that you can use in your templates. These are identified with the prefix `super`, for example:
+
+| Partial | Description |
+| ------- | ----------- |
+| `super.defaultwidgets` | Clean and include the default widgets of Blogger |
+
+To include a partial use the following syntax:
+
+```handlebars
+{{> super.defaultmarkups}}
+```
 
 ## Additional features
 
@@ -255,7 +283,6 @@ When writing your templates, you will be able to use the Blogger language you al
 
 
 ### Root
-
 
 You don't need to add the attributes to the root tag:
 

@@ -232,6 +232,9 @@ You can create any number of partials and organize them as you wish, just make s
 {{> module}}
 ```
 
+> [!TIP]
+> If you have a folder with partials that you frequently create or delete, and they are also called together in a main file, you can use the `folder.` prefix to include all the partials from that folder, for example: `{{> folder.FOLDER_NAME}}`
+
 #### Helpers
 
 These helpers are defined by default in the system, and you can use them in your templates or override them in the Handlebars configuration file:
@@ -265,7 +268,7 @@ Example of use the `currentYear` helper:
 
 #### Partials
 
-There are predefined partials that you can use in your templates. These are identified with the prefix `super`, for example:
+There are predefined partials that you can use in your templates. These are identified with the prefix `super.`, for example:
 
 | Partial | Description |
 | ------- | ----------- |

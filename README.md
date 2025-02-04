@@ -45,6 +45,7 @@ Add some scripts to your `package.json`, a good way to do it is the following:
 ```json
 {
   "scripts": {
+    "dev": "hamlet --mode development --watch",
     "start": "hamlet --mode production --watch",
     "build": "hamlet --mode production"
   }

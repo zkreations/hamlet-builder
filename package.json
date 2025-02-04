@@ -10,6 +10,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
+    "dev": "hamlet --mode development --watch",
     "start": "hamlet --mode production --watch",
     "build": "hamlet --mode production"
   },

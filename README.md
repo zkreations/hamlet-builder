@@ -275,7 +275,7 @@ There are predefined partials that you can use in your templates. These are iden
 
 | Partial | Description |
 | ------- | ----------- |
-| `super.defaultwidgets` | Clean and include the default widgets of Blogger |
+| `super.defaultmarkups` | Clean and include the default widgets of Blogger |
 
 To include a partial use the following syntax:
 

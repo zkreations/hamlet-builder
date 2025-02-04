@@ -120,7 +120,7 @@ Use the helper in the template:
 ```
 
 > [!NOTE]
-> The helper `asset` and `currentYear` are available by default.
+> The helpers `asset` and `currentYear` are always available, even if a configuration file exists, but they can be replaced if they are specified again.
 
 ### Theme
 

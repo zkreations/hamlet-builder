@@ -102,11 +102,13 @@ export default {
 Add a `.handlebarsrc.js`, `handlebars.config.js` or create a folder `.config` with a file `handlebarsrc.js`. You can also use the extension `.cjs` or `.mjs`. The file defines the helpers that will be used in the templates. Here is an example of configuration:
 
 ```js
+const sayHello = (name) => {
+  return `Hello, ${name}!`
+}
+
 export default {
   helpers: {
-    foo: function () {
-      return "bar"
-    }
+    sayHello
   }
 }
 ```

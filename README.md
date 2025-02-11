@@ -276,6 +276,17 @@ There are predefined partials that you can use in your templates. These are iden
 | Partial | Description |
 | ------- | ----------- |
 | `super.defaultmarkups` | Clean and include the default widgets of Blogger |
+| `super.ads` | Function: Create adsense ads |
+| `super.adsense` | Function: AdSense async script |
+| `super.attr` | Function: Add or remove multiple attributes |
+| `super.avatar` | Function: Replace the default avatar image with a custom image |
+| `super.image` | Function: Create custom image tag |
+| `super.kind` | Function: add classes to body tag based on the current view |
+| `super.menu` | Function: Create a menu from a list of links |
+| `super.meta` | Function: Generate meta tags |
+| `super.picture` | Function: Create custom picture tag |
+| `super.snippet` | Function: Create a snippet of a string |
+| `super.functions` | Include all functions partials |
 
 To include a partial use the following syntax:
 

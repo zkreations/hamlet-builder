@@ -8,6 +8,7 @@ import { program } from 'commander'
 
 import { buildMode } from './lib/modes/build-mode.js'
 import { watchMode } from './lib/modes/watch-mode.js'
+import { config } from './lib/config.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const pkgJson = path.join(__dirname, './package.json')
@@ -31,24 +32,30 @@ program
   .option('-w, --watch', 'watches the source files and rebuilds on changes')
   .option('--no-minify', 'Disable minification')
   .action(async (options) => {
-    const input = path.join(userPath, options.input)
-    const output = path.join(userPath, options.output)
     const { name, version } = pkg
+
+    const projectSettings = {
+      input: path.join(userPath, options.input),
+      output: path.join(userPath, options.output),
+      mode: options.mode,
+      minify: options.minify,
+      ...config
+    }
 
     // Log the version and mode
     console.log(`Starting ${chalk.green(`${name}@${version}`)} in ${chalk.blue(options.mode)} mode\n`)
 
     // Check if input directory exists
-    if (!fs.existsSync(input)) {
-      console.error(chalk.red(`Error: ${input} does not exist`))
+    if (!fs.existsSync(projectSettings.input)) {
+      console.error(chalk.red(`Error: ${projectSettings.input} does not exist`))
       process.exit(1)
     }
 
     if (options.watch) {
-      watchMode(input, output, options)
+      watchMode(projectSettings)
       return
     }
 
-    await buildMode(input, output, options)
+    await buildMode(projectSettings)
   })
   .parse(process.argv)

@@ -38,5 +38,5 @@ Object.entries(folders).forEach(([folder, partialList]) => {
 
 const jsContent = `export const superPartials = ${JSON.stringify(partials, null, 2)}\n`
 
-fs.writeFileSync(path.join(outputDir, 'superPartials.js'), jsContent)
-console.log('superPartials.js has been generated successfully!')
+fs.writeFileSync(path.join(outputDir, 'partials.js'), jsContent)
+console.log('partials.js has been generated successfully!')

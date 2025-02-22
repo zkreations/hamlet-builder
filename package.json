@@ -10,7 +10,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build:partials": "node ./scripts/generatePartials.js"
+    "build:partials": "node ./scripts/build-partials.js"
   },
   "files": [
     "bin.js",

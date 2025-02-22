@@ -6,8 +6,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { program } from 'commander'
 
-import { buildMode } from './lib/build-mode.js'
-import { watchMode } from './lib/watch-mode.js'
+import { buildMode } from './lib/modes/build-mode.js'
+import { watchMode } from './lib/modes/watch-mode.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const pkgJson = path.join(__dirname, './package.json')

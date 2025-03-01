@@ -28,15 +28,15 @@ npm install hamlet-builder
 
 ## Flags
 
-This package has the following flags:
-
-| Flag      | Short Flag | Description                         | Default |
-| --------- | ---------- | ----------------------------------- | ------- |
-| `--input` | `-i`       | Input path                          | `src`   |
-| `--output`| `-o`       | Output path                         | `dist`  |
-| `--mode`  | `-m`       | Set mode: development or production | `development` |
-| `--watch` |            | Watches the source files and rebuilds on changes |  |
-| `--no-minify` |        | Disable minification                |  |
+| Flag              | Short Flag | Description                         | Default |
+| ----------------- | ---------- | ----------------------------------- | ------- |
+| `--input`         | `-i`       | Input path                          | `src`   |
+| `--output`        | `-o`       | Output path                         | `dist`  |
+| `--mode`          | `-m`       | Set mode: development or production | `development` |
+| `--watch`         | `-w`       | Watches the source files and rebuilds on changes |  |
+| `--no-minify`     | `-n`       | Disable minify CSS and JS files     |  |
+| `--no-minify-css` | `-c`       | Disable minify CSS files           |  |
+| `--no-minify-js`  | `-j`       | Disable minify JS files            |  |
 
 ## Usage
 

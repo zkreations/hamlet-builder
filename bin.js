@@ -30,16 +30,17 @@ program
   .option('-o, --output <output>', 'Output path', Default.output)
   .option('-m, --mode <mode>', 'Set mode: development or production', Default.mode)
   .option('-w, --watch', 'watches the source files and rebuilds on changes')
-  .option('--no-minify', 'Disable minification')
+  .option('-n, --no-minify', 'Disable all minification')
+  .option('-c, --no-minify-css', 'Disable minification for CSS')
+  .option('-j, --no-minify-js', 'Disable minification for JS')
   .action(async (options) => {
     const { name, version } = pkg
 
     const projectSettings = {
+      ...options,
+      ...config,
       input: path.join(userPath, options.input),
-      output: path.join(userPath, options.output),
-      mode: options.mode,
-      minify: options.minify,
-      ...config
+      output: path.join(userPath, options.output)
     }
 
     // Log the version and mode

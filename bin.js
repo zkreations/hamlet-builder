@@ -36,27 +36,25 @@ program
   .action(async (options) => {
     const { name, version } = pkg
 
-    const projectSettings = {
-      ...options,
-      ...config,
+    Object.assign(options, config, {
       input: path.join(userPath, options.input),
       output: path.join(userPath, options.output)
-    }
+    })
 
     // Log the version and mode
     console.log(`Starting ${chalk.green(`${name}@${version}`)} in ${chalk.blue(options.mode)} mode\n`)
 
     // Check if input directory exists
-    if (!fs.existsSync(projectSettings.input)) {
-      console.error(chalk.red(`Error: ${projectSettings.input} does not exist`))
+    if (!fs.existsSync(options.input)) {
+      console.error(chalk.red(`Error: ${options.input} does not exist`))
       process.exit(1)
     }
 
     if (options.watch) {
-      watchMode(projectSettings)
+      watchMode(options)
       return
     }
 
-    await buildMode(projectSettings)
+    await buildMode(options)
   })
   .parse(process.argv)

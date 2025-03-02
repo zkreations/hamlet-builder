@@ -15,7 +15,7 @@ This package makes it easy to build a Blogger Template. It is used to build the 
 - Use Handlebars to compile HBS and XML files
 - Use Rollup to bundle JS files
 - Use PostCSS to process CSS files
-- Minify CSS and JS files using CleanCSS and Terser (Can be disabled)
+- Minify CSS and JS files using LightningCSS and Terser (Can be disabled)
 - You can use the Blogger language with some additional facilities
 - You can use configuration files to customize the build process (Optional)
 - Fast and easy to use

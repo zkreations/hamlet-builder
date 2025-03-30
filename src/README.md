@@ -1,0 +1,34 @@
+# Partials
+
+> This document explains the different types of partials that can be used in the project.
+
+## Functions
+
+> [!NOTE]
+> If a parameter is mandatory, it is indicated with an asterisk (*).
+
+### @ads
+
+Used to create an Adsense ad block.
+
+#### Parámetros
+
+| Name | Type | Description | Default Value |
+|--------|------|-------------|------------------|
+| `adClientId` | string | Adsense client ID. | `data:blog.adsenseClientId` |
+| `style` | string | Inline style for the ad block. | `display: block` |
+| `slot` | string | ID of the ad block created in Adsense. | - |
+| `layout` | string | ID of the layout (in-feed & in-article ads). | - |
+
+#### Include partial
+
+```hbs
+{{> super.ads}}
+```
+
+#### Usage
+
+```xml
+<b:include name='@ads' data='{ layout: "in-feed" }'/>
+```
+

@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { globSync } from 'glob'
 
-const baseDir = path.join(process.cwd(), 'src/partials')
+const baseDir = path.join(process.cwd(), 'src')
 const outputDir = path.join(process.cwd(), 'lib/data')
 
 const files = globSync(`${baseDir}/**/*.hbs`)

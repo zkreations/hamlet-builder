@@ -11,7 +11,7 @@
 
 Used to create an Adsense ad block.
 
-#### Parámetros
+#### Parameters
 
 | Name | Type | Description | Default Value |
 |--------|------|-------------|------------------|
@@ -26,9 +26,29 @@ Used to create an Adsense ad block.
 {{> super.ads}}
 ```
 
-#### Usage
+#### Usage example
 
 ```xml
 <b:include name='@ads' data='{ layout: "in-feed" }'/>
+```
+
+### @adsense
+
+Includes the Adsense async script in the head of the page.
+
+#### Parameters
+
+> This partial does not accept any parameters.
+
+#### Include partial
+
+```hbs
+{{> super.adsense}}
+```
+
+#### Usage example
+
+```xml
+<b:include name='@adsense'/>
 ```
 

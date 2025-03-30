@@ -69,7 +69,7 @@ Used to add or remove multiple attributes from an element. Every array must have
 #### Usage example
 
 ```xml
-<b:include data='{["id","foo"],["class","foo"]}' name='@attr'/>
+<b:include name='@attr' data='{["id","foo"],["class","foo"]}'/>
 ```
 
 #### References

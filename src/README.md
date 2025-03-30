@@ -1,15 +1,11 @@
-# Partials
-
-> This document explains the different types of partials that can be used in the project.
-
-## Functions
+# Functions
 
 The functions are Blogger inclusions that can be used anywhere in the theme and perform a task that is usually repetitive. These inclusions are created to avoid code repetition and facilitate theme maintenance.
 
 > [!NOTE]
 > If a parameter is mandatory, it is indicated with an asterisk (*).
 
-### @ads
+## @ads
 
 Used to create an Adsense ad block.
 
@@ -34,7 +30,7 @@ Used to create an Adsense ad block.
 <b:include name='@ads' data='{ layout: "in-feed" }'/>
 ```
 
-### @adsense
+## @adsense
 
 Includes the Adsense async script in the head of the page.
 
@@ -53,4 +49,3 @@ Includes the Adsense async script in the head of the page.
 ```xml
 <b:include name='@adsense'/>
 ```
-

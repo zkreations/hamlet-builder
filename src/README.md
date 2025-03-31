@@ -143,3 +143,23 @@ I created a custom image tag. It accepts image parameters along with other HTML 
 #### References
 
 - [zkreations: Manipulate images in Blogger easily](https://www.zkreations.com/2023/09/manipula-imagenes-en-blogger-facilmente.html)
+
+## @kind
+
+Used to add classes to the body tag based on the current view.
+
+#### Parameters
+
+> This partial does not accept any parameters.
+
+#### Include partial
+
+```hbs
+{{> super.kind}}
+```
+
+#### Usage example
+
+```xml
+<b:include name='@kind'/>
+```

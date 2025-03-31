@@ -372,11 +372,6 @@ The above will compile to:
 <b:include name='@image' data='{ src: data:sourceUrl, resize: (data:shrinkToFit ? 500 : 1280) }'/>
 ```
 
-## Supporting
-
-If you want to help me keep this and more related projects always up to date, you can [buy me a coffee](https://ko-fi.com/zkreations) ☕. I will be very grateful 👏.
-
-
 ## Create your beautiful theme
 
 If you used this repository as a template, please, add a star ⭐ and add the following tags in yours:
@@ -385,7 +380,11 @@ If you used this repository as a template, please, add a star ⭐ and add the fo
 - `blogger-handlebars`
 - `blogger-hbs`
 
-Thanks for using this repository. Happy coding! 🚀
+Thanks for using this repository. Happy coding! 🐋
+
+## Supporting
+
+If you want to help me keep this and more related projects always up to date, you can [buy me a coffee](https://ko-fi.com/zkreations) ☕. I will be very grateful 👏.
 
 ## License
 

@@ -78,17 +78,6 @@ Used to add or remove multiple attributes from an element. Every array must have
 
 ## @avatar
 
-<!-- {{!--
-Replace the default avatar image with a custom image
-@author zkreations
-@param {image} src - Avatar image url
-@param {image} [default] - Default image url
-@param {number} [resize=40] - Resize image to a specific size
-@param {string} [alt=data:messages.image] - Alt text for the image
-@param {string} [class] - Additional classes for the image
-@param {string} [loading] - Loading attribute for the image
---}} -->
-
 Create the avatar format with any image, and also set a default image different from the one provided by Blogger.
 
 #### Parameters
@@ -117,3 +106,40 @@ Create the avatar format with any image, and also set a default image different 
 #### References
 
 - [zkreations: Generate avatars from an image.](https://www.zkreations.com/2025/03/genera-avatares-partir-de-una-imagen.html)
+
+
+## @image
+
+I created a custom image tag. It accepts image parameters along with other HTML attributes.
+
+#### Parameters
+
+| Name | Type | Description | Default Value |
+|--------|------|-------------|------------------|
+| `src` | string | Image URL. | - |
+| `alt` | string | Alt text for the image. | `data:messages.image` |
+| `id` | string | Unique ID for the image. | - |
+| `class` | string | Additional classes for the image. | - |
+| `width` | string | Image width. | - |
+| `height` | string | Image height. | - |
+| `resize` | number | Resize image to a specific size. | - |
+| `ratio` | string | Aspect ratio for the image. | - |
+| `sizes` | string | Sizes attribute value. | - |
+| `srcset` | array | Array of dimensions for the image. | - |
+| `loading` | string | Loading attribute for the image. | - |
+| `params` | string | Additional [Google image parameters](https://www.zkreations.com/image-params). | - |
+
+#### Include partial
+
+```hbs
+{{> super.image}}
+```
+#### Usage example
+
+```xml
+<b:include name='@image' data='{ src: data:view.featuredImage }'/>
+```
+
+#### References
+
+- [zkreations: Manipulate images in Blogger easily](https://www.zkreations.com/2023/09/manipula-imagenes-en-blogger-facilmente.html)

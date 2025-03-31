@@ -292,7 +292,7 @@ Overrides are Blogger inclusions that can be used in specific parts of the theme
 
 ## defaultmarkups
 
-Genera una lista de inclusiones predeterminadas de Blogger y de todos sus widgets las cuales están cerradas. Al hacer esto, se evita que Blogger genere sus propias inclusiones.
+Generates a list of Blogger's default inclusions and all its widgets that are closed. By doing this, it prevents Blogger from generating its own inclusions.
 
 #### Parameters
 

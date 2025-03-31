@@ -271,7 +271,7 @@ Example of use the `currentYear` helper:
 
 #### Partials
 
-There are predefined partials that you can use in your templates. These are identified with the prefix `super.`, for example:
+There are predefined partials that you can use in your templates. These are identified with the prefix `super.`. To learn more, you can refer to [the documentation on default partials](src/README.md). Below is a table with the available partials:
 
 | Partial | Description |
 | ------- | ----------- |
@@ -287,12 +287,6 @@ There are predefined partials that you can use in your templates. These are iden
 | `super.picture` | Function: Create custom picture tag |
 | `super.snippet` | Function: Create a snippet of a string |
 | `super.functions` | Include all functions partials |
-
-To include a partial use the following syntax:
-
-```handlebars
-{{> super.defaultmarkups}}
-```
 
 ## Additional features
 

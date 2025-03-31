@@ -36,7 +36,7 @@ Includes the Adsense async script in the head of the page.
 
 #### Parameters
 
-> This partial does not accept any parameters.
+> This includable does not accept any parameters.
 
 #### Include partial
 
@@ -150,7 +150,7 @@ Used to add classes to the body tag based on the current view.
 
 #### Parameters
 
-> This partial does not accept any parameters.
+> This includable does not accept any parameters.
 
 #### Include partial
 
@@ -285,4 +285,32 @@ Creates a snippet of a string. It allows you to specify the length of the string
 #### References
 
 - [zkreations: Create truncated text blocks in Blogger](https://www.zkreations.com/2025/03/crea-bloques-de-texto-truncados.html)
+
+# Overrides
+
+Overrides are Blogger inclusions that can be used in specific parts of the theme and serve to override inclusions that Blogger generates automatically.
+
+## defaultmarkups
+
+Genera una lista de inclusiones predeterminadas de Blogger y de todos sus widgets las cuales están cerradas. Al hacer esto, se evita que Blogger genere sus propias inclusiones.
+
+#### Parameters
+
+> This partial does not accept any parameters.
+
+#### Include partial
+
+```hbs
+{{> super.defaultmarkups}}
+```
+#### Usage example
+
+```hbs
+<b:defaultmarkups>
+  {{> super.defaultmarkups}}
+</b:defaultmarkups>
+```
+
+> [!IMPORTANT]
+> This partial must be included inside the `<b:defaultmarkups>` tag. Otherwise, it will not work.
 

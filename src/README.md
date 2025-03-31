@@ -193,3 +193,29 @@ Create a list of links using a PageList widget link list
 
 - [zkreations: Dropdown menu with the links object](https://www.zkreations.com/2023/11/menu-desplegable-con-el-objeto-links.html)
 
+## @meta
+
+Creates the header metadata for the page, including favicons, description, canonical URL, robots, Open Graph, and Twitter tags. It's a modern replacement for Blogger's global inclusion `all-head-content`.
+
+#### Parameters
+
+| Name | Type | Description | Default Value |
+|--------|------|-------------|------------------|
+| `cardType` | string | Twitter card type. | `summary_large_image` |
+| `forceHttps` | boolean | Force https on Canonicals URL. | - |
+| `favicon` | string | URL of multiple resolutions favicon. | - |
+| `favSizes` | array | Array of numbers/dimensions for favicons. | `[32,96,180,192]` |
+| `robots` | string | Custom meta robots specifications. | `index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1` |
+| `ogImage` | string | Default social networks image. | - |
+
+#### Include partial
+
+```hbs
+{{> super.meta}}
+```
+
+#### Usage example
+
+```xml
+<b:include name='@meta' data='{ robots: "noindex,nofollow" }'/>
+```

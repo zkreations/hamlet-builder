@@ -110,7 +110,7 @@ Create the avatar format with any image, and also set a default image different 
 
 ## @image
 
-I created a custom image tag. It accepts image parameters along with other HTML attributes.
+Insert a custom image tag. It accepts image parameters along with other HTML attributes.
 
 #### Parameters
 

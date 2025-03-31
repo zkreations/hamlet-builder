@@ -219,3 +219,38 @@ Creates the header metadata for the page, including favicons, description, canon
 ```xml
 <b:include name='@meta' data='{ robots: "noindex,nofollow" }'/>
 ```
+
+## @picture
+
+Create a custom picture tag. It accepts image parameters along with other HTML attributes.
+
+#### Parameters
+
+| Name | Type | Description | Default Value |
+|--------|------|-------------|------------------|
+| `src` | string | Image URL. | - |
+| `resizeSet` | array | Array of dimensions for the image. | `[700,400]` |
+| `alt` | string | Alt text for the image. | `data:messages.image` |
+| `id` | string | Unique ID for the image. | - |
+| `class` | string | Additional classes for the image. | - |
+| `width` | string | Image width. | - |
+| `height` | string | Image height. | - |
+| `ratio` | string | Aspect ratio for the image. | - |
+| `loading` | string | Loading attribute for the image. | - |
+| `params` | string | Additional [Google image parameters](https://www.zkreations.com/image-params). | - |
+
+#### Include partial
+
+```hbs
+{{> super.picture}}
+```
+
+#### Usage example
+
+```xml
+<b:include name='@picture' data='{ src: data:view.featuredImage }'/>
+```
+
+#### References
+
+- [zkreations: Generate responsive images with the picture tag](https://www.zkreations.com/2023/09/generar-imagenes-responsive-picture.html)

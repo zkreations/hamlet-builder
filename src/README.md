@@ -163,3 +163,33 @@ Used to add classes to the body tag based on the current view.
 ```xml
 <b:include name='@kind'/>
 ```
+
+## @menu
+
+Create a list of links using a PageList widget link list
+
+#### Parameters
+
+| Name | Type | Description | Default Value |
+|--------|------|-------------|------------------|
+| `links` | array | Array of links. | - |
+| `prefix` | string | Prefix for filter links. | `__` |
+| `class` | string | Class for the menu. | - |
+| `id` | string | Id for the menu. | - |
+
+#### Include partial
+
+```hbs
+{{> super.menu}}
+```
+
+#### Usage example
+
+```xml
+<b:include name='@menu' data='{ links: data:links }'/>
+```
+
+#### References
+
+- [zkreations: Dropdown menu with the links object](https://www.zkreations.com/2023/11/menu-desplegable-con-el-objeto-links.html)
+

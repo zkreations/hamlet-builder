@@ -254,3 +254,35 @@ Create a custom picture tag. It accepts image parameters along with other HTML a
 #### References
 
 - [zkreations: Generate responsive images with the picture tag](https://www.zkreations.com/2023/09/generar-imagenes-responsive-picture.html)
+
+## @snippet
+
+Creates a snippet of a string. It allows you to specify the length of the string, the HTML tag to be used, and whether to include ellipsis at the end.
+
+#### Parameters
+
+| Name | Type | Description | Default Value |
+|--------|------|-------------|------------------|
+| `string` | string | Text to be shortened. | - |
+| `tag` | string | Container HTML tag. | `p` |
+| `class` | string | Container class. | - |
+| `id` | string | Container id. | - |
+| `length` | number | Length of the string. | `70` |
+| `ellipsis` | string | Ellipsis to be added at the end of the string. | `...` |
+
+#### Include partial
+
+```hbs
+{{> super.snippet}}
+```
+
+#### Usage example
+
+```xml
+<b:include name='@snippet' data='{ string: data:post.snippets.long, length: 100 }'/>
+```
+
+#### References
+
+- [zkreations: Create truncated text blocks in Blogger](https://www.zkreations.com/2025/03/crea-bloques-de-texto-truncados.html)
+

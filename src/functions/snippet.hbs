@@ -6,6 +6,7 @@ Creates a snippet of a string
 @param {string} [class] - Container class
 @param {string} [id] - Container id
 @param {number} [length=70] - Length of the string
+@param {string} [ellipsis="..."] - Ellipsis to be added at the end of the string
 --}}
 <b:includable id='@snippet'>
   <b:if cond='data:string and (data:string snippet {
@@ -27,7 +28,7 @@ Creates a snippet of a string
             links: false,
             ellipsis: false,
             linebreaks: false
-          }) + "..."'/>
+          }) + (data:ellipsis ?: "...")'/>
       </b:tag>
     </b:with>
     </b:with>

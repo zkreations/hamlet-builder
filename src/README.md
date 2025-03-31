@@ -74,4 +74,46 @@ Used to add or remove multiple attributes from an element. Every array must have
 
 #### References
 
-- [zkreations: Add or remove multiple attributes in one line](https://www.zkreations.com/2023/04/agrega-multiples-atributos-en-una-sola.html)
+- [zkreations: Add or remove multiple attributes in one line.](https://www.zkreations.com/2023/04/agrega-multiples-atributos-en-una-sola.html)
+
+## @avatar
+
+<!-- {{!--
+Replace the default avatar image with a custom image
+@author zkreations
+@param {image} src - Avatar image url
+@param {image} [default] - Default image url
+@param {number} [resize=40] - Resize image to a specific size
+@param {string} [alt=data:messages.image] - Alt text for the image
+@param {string} [class] - Additional classes for the image
+@param {string} [loading] - Loading attribute for the image
+--}} -->
+
+Create the avatar format with any image, and also set a default image different from the one provided by Blogger.
+
+#### Parameters
+
+| Name | Type | Description | Default Value |
+|--------|------|-------------|------------------|
+| `src` | string | Avatar image URL. | - |
+| `default` | string | Default image URL. | [default-user](https://lh3.googleusercontent.com/a/default-user) |
+| `resize` | number | Resize image to a specific size. | 40 |
+| `alt` | string | Alt text for the image. | `data:messages.image` |
+| `class` | string | Additional classes for the image. | - |
+| `loading` | string | Loading attribute for the image. | - |
+
+#### Include partial
+
+```hbs
+{{> super.avatar}}
+```
+
+#### Usage example
+
+```xml
+ <b:include name='@avatar' data='{ src: data:post.author.authorPhoto.image }'/>
+```
+
+#### References
+
+- [zkreations: Generate avatars from an image.](https://www.zkreations.com/2025/03/genera-avatares-partir-de-una-imagen.html)

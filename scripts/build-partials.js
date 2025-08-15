@@ -6,7 +6,7 @@ import { ESLint } from 'eslint'
 const baseDir = path.join(process.cwd(), 'src')
 const outputDir = path.join(process.cwd(), 'lib/data')
 
-const files = globSync(`${baseDir}/**/*.hbs`)
+const files = globSync(`${baseDir}/**/*.@(xml|hbs|handlebars)`)
 
 const partials = {}
 const folders = {}

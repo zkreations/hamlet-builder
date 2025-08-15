@@ -207,7 +207,7 @@ The file `main.bundle.js` will be the main file, while the other files will be c
 
 ### Compile templates
 
-The system will search for `hbs` and `xml` files to compile them. If the file name starts with an underscore `_`, it will be considered a partial file, for example:
+The system will search for `xml`, `hbs` and `handlebars` files to compile them. If the file name starts with an underscore `_`, it will be considered a partial file, for example:
 
 ```bash
 ├── src

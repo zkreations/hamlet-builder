@@ -4,7 +4,7 @@
   "description": "Compiler used by the Hamlet theme for Blogger developers.",
   "type": "module",
   "bin": {
-    "hamlet": "./bin.js"
+    "hamlet": "bin.js"
   },
   "engines": {
     "node": ">=20.0.0"

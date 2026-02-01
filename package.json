@@ -1,6 +1,6 @@
 {
   "name": "hamlet-builder",
-  "version": "1.0.45",
+  "version": "1.0.46",
   "description": "Compiler used by the Hamlet theme for Blogger developers.",
   "type": "module",
   "bin": {

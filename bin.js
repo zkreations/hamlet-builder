@@ -8,6 +8,7 @@ import { program } from 'commander'
 
 import { buildMode } from './lib/modes/build-mode.js'
 import { watchMode } from './lib/modes/watch-mode.js'
+import { infoMode } from './lib/modes/info-mode.js'
 import { config } from './lib/config.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -30,9 +31,10 @@ program
   .option('-o, --output <output>', 'Output path', Default.output)
   .option('-m, --mode <mode>', 'Set mode: development or production', Default.mode)
   .option('-w, --watch', 'watches the source files and rebuilds on changes')
+  .option('-I, --info', 'Display information about the project')
   .option('-n, --no-minify', 'Disable all minification')
-  .option('-c, --no-minify-css', 'Disable minification for CSS')
-  .option('-j, --no-minify-js', 'Disable minification for JS')
+  .option('--no-minify-css', 'Disable minification for CSS')
+  .option('--no-minify-js', 'Disable minification for JS')
   .action(async (options) => {
     const { name, version } = pkg
 
@@ -48,6 +50,11 @@ program
     if (!fs.existsSync(options.input)) {
       console.error(chalk.red(`Error: ${options.input} does not exist`))
       process.exit(1)
+    }
+
+    if (options.info) {
+      await infoMode(options)
+      return
     }
 
     if (options.watch) {

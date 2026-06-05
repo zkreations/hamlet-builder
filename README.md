@@ -32,9 +32,10 @@ npm install hamlet-builder
 | `--output`        | `-o`       | Output path                         | `dist`  |
 | `--mode`          | `-m`       | Set mode: development or production | `development` |
 | `--watch`         | `-w`       | Watches the source files and rebuilds on changes |  |
-| `--no-minify`     | `-n`       | Disable minify CSS and JS files     |  |
-| `--no-minify-css` | `-c`       | Disable minify CSS files           |  |
-| `--no-minify-js`  | `-j`       | Disable minify JS files            |  |
+| `--info`          | `-I`       | Display information about the project |  |
+| `--no-minify`     | `-n`       | Disable all minification |  |
+| `--no-minify-css` |            | Disable minification for CSS |  |
+| `--no-minify-js`  |            | Disable minification for JS |  |
 
 ## Usage
 
@@ -50,11 +51,20 @@ Add some scripts to your `package.json`, a good way to do it is the following:
 }
 ```
 
+> [!NOTE]
+> You can invoke the CLI using either `hamlet` or `hamlet-builder`.
+
 Then you can run the following commands:
 
 ```bash
 npm run start
 npm run build
+```
+
+You can also use the CLI directly. For example, to start it in development mode with automatic file watching:
+
+```bash
+npx hamlet --mode development --watch
 ```
 
 ## Configuration Files

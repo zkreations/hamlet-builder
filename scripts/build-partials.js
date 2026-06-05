@@ -14,7 +14,7 @@ const folders = {}
 files.forEach((file) => {
   const extension = path.extname(file)
   const fileName = path.basename(file, extension)
-  const partialName = `super.${fileName}`
+  const partialName = `hamlet.${fileName}`
   const folderName = path.dirname(file).split(path.sep).pop()
 
   partials[partialName] = fs.readFileSync(file, 'utf8').trim() + '\n'
@@ -29,15 +29,15 @@ files.forEach((file) => {
 Object.entries(folders).forEach(([folder, partialList]) => {
   partialList.sort()
 
-  if (partialList.length <= 1) {
+  if (partialList.length === 0) {
     return
   }
 
-  const folderPartialName = `super.${folder}`
+  const folderPartialName = `hamlet.${folder}`
   partials[folderPartialName] = partialList.join('\n') + '\n'
 })
 
-const jsContent = `export const superPartials = ${JSON.stringify(partials, null, 2)}\n`
+const jsContent = `export const hamletPartials = ${JSON.stringify(partials, null, 2)}\n`
 
 async function formatWithESLint (code) {
   const eslint = new ESLint({ fix: true })

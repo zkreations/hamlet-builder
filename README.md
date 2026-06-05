@@ -269,22 +269,22 @@ Example of use the `currentYear` helper:
 
 #### Partials
 
-There are predefined partials that you can use in your templates. These are identified with the prefix `super.`. To learn more, you can refer to [the documentation on default partials](src/README.md). Below is a table with the available partials:
+There are predefined partials that you can use in your templates. These are identified with the prefix `hamlet.`. To learn more, you can refer to [the documentation on default partials](src/README.md). Below is a table with the available partials:
 
 | Partial | Description |
 | ------- | ----------- |
-| `super.defaultmarkups` | Clean and include the default widgets of Blogger |
-| `super.ads` | Function: Create adsense ads |
-| `super.adsense` | Function: AdSense async script |
-| `super.attr` | Function: Add or remove multiple attributes |
-| `super.avatar` | Function: Replace the default avatar image with a custom image |
-| `super.image` | Function: Create custom image tag |
-| `super.kind` | Function: add classes to body tag based on the current view |
-| `super.menu` | Function: Create a menu from a list of links |
-| `super.meta` | Function: Generate meta tags |
-| `super.picture` | Function: Create custom picture tag |
-| `super.snippet` | Function: Create a snippet of a string |
-| `super.functions` | Include all functions partials |
+| `hamlet.defaultmarkups` | Clean and include the default widgets of Blogger |
+| `hamlet.ads` | Function: Create adsense ads |
+| `hamlet.adsense` | Function: AdSense async script |
+| `hamlet.attr` | Function: Add or remove multiple attributes |
+| `hamlet.avatar` | Function: Replace the default avatar image with a custom image |
+| `hamlet.image` | Function: Create custom image tag |
+| `hamlet.kind` | Function: add classes to body tag based on the current view |
+| `hamlet.menu` | Function: Create a menu from a list of links |
+| `hamlet.meta` | Function: Generate meta tags |
+| `hamlet.picture` | Function: Create custom picture tag |
+| `hamlet.snippet` | Function: Create a snippet of a string |
+| `hamlet.functions` | Include all functions partials |
 
 ## Additional features
 

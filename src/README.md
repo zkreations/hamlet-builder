@@ -21,7 +21,7 @@ Used to create an Adsense ad block.
 #### Include partial
 
 ```hbs
-{{> super.ads}}
+{{> hamlet.ads}}
 ```
 
 #### Usage example
@@ -41,7 +41,7 @@ Includes the Adsense async script in the head of the page.
 #### Include partial
 
 ```hbs
-{{> super.adsense}}
+{{> hamlet.adsense}}
 ```
 
 #### Usage example
@@ -63,7 +63,7 @@ Used to add or remove multiple attributes from an element. Every array must have
 #### Include partial
 
 ```hbs
-{{> super.attr}}
+{{> hamlet.attr}}
 ```
 
 #### Usage example
@@ -94,7 +94,7 @@ Create the avatar format with any image, and also set a default image different 
 #### Include partial
 
 ```hbs
-{{> super.avatar}}
+{{> hamlet.avatar}}
 ```
 
 #### Usage example
@@ -132,7 +132,7 @@ Insert a custom image tag. It accepts image parameters along with other HTML att
 #### Include partial
 
 ```hbs
-{{> super.image}}
+{{> hamlet.image}}
 ```
 #### Usage example
 
@@ -155,7 +155,7 @@ Used to add classes to the body tag based on the current view.
 #### Include partial
 
 ```hbs
-{{> super.kind}}
+{{> hamlet.kind}}
 ```
 
 #### Usage example
@@ -180,7 +180,7 @@ Create a list of links using a PageList widget link list
 #### Include partial
 
 ```hbs
-{{> super.menu}}
+{{> hamlet.menu}}
 ```
 
 #### Usage example
@@ -211,7 +211,7 @@ Creates the header metadata for the page, including favicons, description, canon
 #### Include partial
 
 ```hbs
-{{> super.meta}}
+{{> hamlet.meta}}
 ```
 
 #### Usage example
@@ -242,7 +242,7 @@ Create a custom picture tag. It accepts image parameters along with other HTML a
 #### Include partial
 
 ```hbs
-{{> super.picture}}
+{{> hamlet.picture}}
 ```
 
 #### Usage example
@@ -273,7 +273,7 @@ Creates a snippet of a string. It allows you to specify the length of the string
 #### Include partial
 
 ```hbs
-{{> super.snippet}}
+{{> hamlet.snippet}}
 ```
 
 #### Usage example
@@ -301,13 +301,13 @@ Generates a list of Blogger's default inclusions and all its widgets that are cl
 #### Include partial
 
 ```hbs
-{{> super.defaultmarkups}}
+{{> hamlet.defaultmarkups}}
 ```
 #### Usage example
 
 ```hbs
 <b:defaultmarkups>
-  {{> super.defaultmarkups}}
+  {{> hamlet.defaultmarkups}}
 </b:defaultmarkups>
 ```
 

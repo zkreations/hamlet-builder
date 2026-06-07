@@ -17,7 +17,6 @@ const pkg = JSON.parse(fs.readFileSync(pkgJson, 'utf-8'))
 
 const userPath = process.cwd()
 
-// Default options
 const Default = {
   input: './src',
   output: './dist',
@@ -43,18 +42,16 @@ program
       output: path.join(userPath, options.output)
     })
 
-    // Log the version and mode
+    if (options.info) {
+      console.log(`Starting ${chalk.green(`${name}@${version}`)} for generating project information\n`)
+      await infoMode(options)
+    }
+
     console.log(`Starting ${chalk.green(`${name}@${version}`)} in ${chalk.blue(options.mode)} mode\n`)
 
-    // Check if input directory exists
     if (!fs.existsSync(options.input)) {
       console.error(chalk.red(`Error: ${options.input} does not exist`))
       process.exit(1)
-    }
-
-    if (options.info) {
-      await infoMode(options)
-      return
     }
 
     if (options.watch) {

@@ -294,6 +294,7 @@ There are predefined partials that you can use in your templates. These are iden
 | `hamlet.meta` | Function: Generate meta tags |
 | `hamlet.picture` | Function: Create custom picture tag |
 | `hamlet.snippet` | Function: Create a snippet of a string |
+| `hamlet.skinVars` | Function: Generate CSS variables from the skin data |
 | `hamlet.functions` | Include all functions partials |
 
 ## Additional features

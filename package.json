@@ -1,28 +1,24 @@
 {
   "name": "hamlet-builder",
+  "type": "module",
   "version": "1.3.2",
   "description": "Compiler used by the Hamlet theme for Blogger developers.",
-  "type": "module",
+  "author": "zkreations <daniel@zkreations.com> (https://zkreations.com/)",
+  "license": "MIT",
+  "keywords": [],
   "bin": {
     "hamlet": "bin.js",
     "hamlet-builder": "bin.js"
-  },
-  "engines": {
-    "node": ">=20.0.0"
-  },
-  "scripts": {
-    "build:partials": "node ./scripts/build-partials.js"
   },
   "files": [
     "bin.js",
     "lib"
   ],
-  "keywords": [],
-  "author": "zkreations <daniel@zkreations.com> (https://zkreations.com/)",
-  "license": "MIT",
-  "devDependencies": {
-    "@antfu/eslint-config": "^9.1.0",
-    "eslint": "^10.5.0"
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build:partials": "node ./scripts/build-partials.js"
   },
   "dependencies": {
     "@rollup/plugin-babel": "^7.1.0",
@@ -41,6 +37,10 @@
     "rollup": "^4.62.2",
     "sass": "^1.101.0",
     "terser": "^5.48.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^9.1.0",
+    "eslint": "^10.5.0"
   },
   "browserslist": [
     ">= 1%",

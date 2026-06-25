@@ -21,8 +21,8 @@
   "author": "zkreations <daniel@zkreations.com> (https://zkreations.com/)",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^8.57.1",
-    "eslint-config-standard": "^17.1.0"
+    "@antfu/eslint-config": "^9.1.0",
+    "eslint": "^10.5.0"
   },
   "dependencies": {
     "@rollup/plugin-babel": "^7.1.0",

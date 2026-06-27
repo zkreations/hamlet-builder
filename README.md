@@ -1,7 +1,7 @@
 
 # Hamlet-builder
 
-<img src="https://raw.githubusercontent.com/zkreations/hamlet-builder/main/hamlet-logo.png" align="left" />
+<img src="https://raw.githubusercontent.com/zkreations/hamlet-builder/main/hamlet-logo.png" align="left" alt="Hamlet Builder" />
 
 [![V](https://img.shields.io/npm/v/hamlet-builder)](https://www.npmjs.com/package/hamlet-builder) [![L](https://img.shields.io/npm/l/hamlet-builder)](LICENSE)
 
@@ -74,7 +74,7 @@ npx hamlet --mode development --watch
 Add a `.rolluprc.js`, `rollup.config.js` or create a folder `.config` with a file `rolluprc.js`. You can also use the extension `.cjs` or `.mjs`. Here is an example of configuration:
 
 ```js
-import terser from "@rollup/plugin-terser"
+import terser from '@rollup/plugin-terser'
 
 export default {
   plugins: [
@@ -91,8 +91,8 @@ export default {
 Add a `.postcssrc.js`, `postcss.config.js` or create a folder `.config` with a file `postcssrc.js`. You can also use the extension `.cjs` or `.mjs`. Here is an example of configuration:
 
 ```js
-import cssnanoPlugin from "cssnano"
-import autoprefixer from "autoprefixer"
+import autoprefixer from 'autoprefixer'
+import cssnanoPlugin from 'cssnano'
 
 export default {
   plugins: [
@@ -110,7 +110,7 @@ export default {
 Add a `.handlebarsrc.js`, `handlebars.config.js` or create a folder `.config` with a file `handlebarsrc.js`. You can also use the extension `.cjs` or `.mjs`. The file defines the helpers that will be used in the templates. Here is an example of configuration:
 
 ```js
-const sayHello = (name) => {
+function sayHello(name) {
   return `Hello, ${name}!`
 }
 

@@ -1,4 +1,3 @@
-
 # Hamlet-builder
 
 <img src="https://raw.githubusercontent.com/zkreations/hamlet-builder/main/hamlet-logo.png" align="left" alt="Hamlet Builder" />
@@ -85,6 +84,11 @@ export default {
 
 > [!IMPORTANT]
 > Plugins execute arbitrary Node.js code. Treat them as you would any other npm dependency—only install plugins from trusted sources.
+
+A plugin must export a default function that returns an object with `partials` and/or `helpers`. If a plugin tries to register a name that already exists (a built-in helper/partial, or one from another plugin), it will be skipped with a console warning instead of overwriting it.
+
+> [!TIP]
+> Want to build your own plugin? Check out the official starter: [hamlet-plugin-template](https://github.com/zkreations/hamlet-plugin-template).
 
 
 ### Rollup
@@ -272,6 +276,19 @@ These helpers are defined by default in the system, and you can use them in your
 | ------ | ----------- |
 | `asset` | Include the content of the file in the template |
 | `currentYear` | Include the current year |
+| `eq` | Check if two values are equal (`===`) |
+| `ne` | Check if two values are not equal (`!==`) |
+| `lt` | Check if the first value is less than the second |
+| `gt` | Check if the first value is greater than the second |
+| `and` | Logical AND between two values |
+| `or` | Logical OR between two values |
+| `not` | Negate a value |
+| `concat` | Concatenate multiple strings |
+| `includes` | Check if a string contains a substring |
+| `capitalize` | Capitalize the first letter of a string |
+| `first` | Get the first element of an array |
+| `last` | Get the last element of an array |
+| `switch` / `case` / `default` | Block helpers to create switch-like conditional logic |
 
 Example of use the `asset` helper:
 
@@ -293,6 +310,28 @@ Example of use the `currentYear` helper:
 
 ```handlebars
 {{currentYear}}
+```
+
+Example of use the comparison and logic helpers:
+
+```handlebars
+{{#if (eq view.type "post")}}
+  This is a post
+{{/if}}
+
+{{#if (and isPost hasThumbnail)}}
+  This post has a thumbnail
+{{/if}}
+```
+
+Example of use the `switch` / `case` / `default` helpers:
+
+```handlebars
+{{#switch view.type}}
+  {{#case "post"}}This is a post{{/case}}
+  {{#case "page"}}This is a page{{/case}}
+  {{#default}}Unknown type{{/default}}
+{{/switch}}
 ```
 
 #### Partials
@@ -410,5 +449,3 @@ If you want to help me keep this and more related projects always up to date, yo
 ## License
 
 **Hamlet-builder** is licensed under the MIT License
-
-

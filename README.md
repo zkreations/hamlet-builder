@@ -69,6 +69,24 @@ npx hamlet --mode development --watch
 
 ## Configuration Files
 
+### Hamlet
+
+Usage for Hamlet plugins. You can add a configuration file to the root of your project by creating a `.hamletrc.js` or `hamlet.config.js` file, or by placing a `hamletrc.js` file inside a `.config/` folder. You can also use `.cjs` or `.mjs` extensions. Here is an example configuration:
+
+```js
+import testPlugin from '@hamlet/test-plugin'
+
+export default {
+  plugins: [
+    testPlugin(),
+  ]
+}
+```
+
+> [!IMPORTANT]
+> Plugins execute arbitrary Node.js code. Treat them as you would any other npm dependency—only install plugins from trusted sources.
+
+
 ### Rollup
 
 Add a `.rolluprc.js`, `rollup.config.js` or create a folder `.config` with a file `rolluprc.js`. You can also use the extension `.cjs` or `.mjs`. Here is an example of configuration:

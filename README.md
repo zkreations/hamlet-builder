@@ -70,17 +70,21 @@ npx hamlet --mode development --watch
 
 ### Hamlet
 
-Usage for Hamlet plugins. You can add a configuration file to the root of your project by creating a `.hamletrc.js` or `hamlet.config.js` file, or by placing a `hamletrc.js` file inside a `.config/` folder. You can also use `.cjs` or `.mjs` extensions. Here is an example configuration:
+Usage for Hamlet plugins and creating local helpers (without namespacing). You can add a configuration file to the root of your project by creating a `.hamletrc.js` or `hamlet.config.js` file, or by placing a `hamletrc.js` file inside a `.config/` folder. You can also use `.cjs` or `.mjs` extensions. Here is an example configuration:
 
 ```js
 import testPlugin from '@hamlet/test-plugin'
 
 export default {
+  recompileStyleOnAnyChange: false,
+  helpers: {},
   plugins: [
     testPlugin(),
   ]
 }
 ```
+
+If you use tailwindcss or any other class-based CSS framework, the `recompileStyleOnAnyChange` option can be useful to recompile styles when you modify templates, as these frameworks generate classes dynamically.
 
 > [!IMPORTANT]
 > Plugins execute arbitrary Node.js code. Treat them as you would any other npm dependency—only install plugins from trusted sources.
@@ -89,7 +93,6 @@ A plugin must export a default function that returns an object with `partials` a
 
 > [!TIP]
 > Want to build your own plugin? Check out the official starter: [hamlet-plugin-template](https://github.com/zkreations/hamlet-plugin-template).
-
 
 ### Rollup
 
@@ -126,31 +129,6 @@ export default {
 
 > [!NOTE]
 > The `autoprefixer` plugin is used by default if a configuration file is not specified.
-
-### Handlebars
-
-Add a `.handlebarsrc.js`, `handlebars.config.js` or create a folder `.config` with a file `handlebarsrc.js`. You can also use the extension `.cjs` or `.mjs`. The file defines the helpers that will be used in the templates. Here is an example of configuration:
-
-```js
-function sayHello(name) {
-  return `Hello, ${name}!`
-}
-
-export default {
-  helpers: {
-    sayHello
-  }
-}
-```
-
-Use the helper in the template:
-
-```handlebars
-{{foo}}
-```
-
-> [!NOTE]
-> The helpers `asset` and `currentYear` are always available, even if a configuration file exists, but they can be replaced if they are specified again.
 
 ### Theme
 

@@ -1,7 +1,7 @@
 {
   "name": "hamlet-builder",
   "type": "module",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "Compiler used by the Hamlet theme for Blogger developers.",
   "author": "zkreations <daniel@zkreations.com> (https://zkreations.com/)",
   "license": "MIT",

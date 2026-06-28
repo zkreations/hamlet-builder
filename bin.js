@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 import { program } from 'commander'
 
-import { config } from './lib/config.js'
+import { loadConfigurations } from './lib/config.js'
 import { buildMode } from './lib/modes/build-mode.js'
 import { infoMode } from './lib/modes/info-mode.js'
 import { watchMode } from './lib/modes/watch-mode.js'
@@ -37,7 +37,20 @@ program
   .option('--no-minify-js', 'Disable minification for JS')
   .action(async (options) => {
     const { name, version } = pkg
-    const resolvedConfig = await config
+    const projectRoot = userPath
+
+    const context = {
+      paths: {
+        root: projectRoot,
+        src: path.join(projectRoot, options.input),
+        dist: path.join(projectRoot, options.output),
+      },
+      utils: {
+        resolve: (...args) => path.join(projectRoot, ...args),
+      },
+    }
+
+    const resolvedConfig = await loadConfigurations(context)
 
     Object.assign(options, resolvedConfig, {
       input: path.join(userPath, options.input),

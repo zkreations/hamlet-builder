@@ -70,26 +70,57 @@ npx hamlet --mode development --watch
 
 ### Hamlet
 
-Usage for Hamlet plugins and creating local helpers (without namespacing). You can add a configuration file to the root of your project by creating a `.hamletrc.js` or `hamlet.config.js` file, or by placing a `hamletrc.js` file inside a `.config/` folder. You can also use `.cjs` or `.mjs` extensions. Here is an example configuration:
+Configuration file for Hamlet plugins, custom helpers, and build options. You can add a configuration file to the root of your project by creating a `.hamletrc.js` or `hamlet.config.js` file, or by placing a `hamletrc.js` file inside a `.config/` folder. You can also use `.cjs` or `.mjs` extensions.
+
+#### Basic configuration
 
 ```js
 import testPlugin from '@hamlet/test-plugin'
 
 export default {
   recompileStyleOnAnyChange: false,
-  helpers: {},
+  helpers: {
+    sayHello: name => `Hello, ${name}!`,
+  },
   plugins: [
     testPlugin(),
   ]
 }
 ```
 
-If you use tailwindcss or any other class-based CSS framework, the `recompileStyleOnAnyChange` option can be useful to recompile styles when you modify templates, as these frameworks generate classes dynamically.
+#### Options
+
+- **`helpers`** — Object with custom Handlebars helpers. These helpers don't require namespacing and can override built-in helpers if needed. Use for local project helpers only; for distributable helpers, use the `plugins` system with namespacing.
+- **`plugins`** — Array of plugin factory functions. Each plugin should return an object with `partials` and/or `helpers` keys. Namespaced helpers/partials from plugins cannot override built-in or previously registered ones (will be skipped with a warning).
+- **`recompileStyleOnAnyChange`** — Boolean (default: `false`). If `true`, CSS is recompiled whenever any file changes (useful for class-based CSS frameworks like Tailwind that generate styles dynamically).
+
+#### Using context in configuration
+
+If your configuration needs access to paths or other context information, export a function instead of an object:
+
+```js
+export default ({ paths }) => ({
+  recompileStyleOnAnyChange: true,
+  helpers: {
+    projectRoot: () => paths.root,
+  },
+  plugins: [
+    // can use paths.src, paths.dist, etc.
+  ]
+})
+```
+
+Available context properties:
+- **`paths.root`** — Absolute path to the project root
+- **`paths.src`** — Absolute path to the source directory (input)
+- **`paths.dist`** — Absolute path to the output directory (dist)
+
+#### Plugin development
+
+A plugin must export a default function that returns an object with `partials` and/or `helpers`. If a plugin tries to register a name that already exists (a built-in helper/partial, or one from another plugin), it will be skipped with a console warning instead of overwriting it.
 
 > [!IMPORTANT]
 > Plugins execute arbitrary Node.js code. Treat them as you would any other npm dependency—only install plugins from trusted sources.
-
-A plugin must export a default function that returns an object with `partials` and/or `helpers`. If a plugin tries to register a name that already exists (a built-in helper/partial, or one from another plugin), it will be skipped with a console warning instead of overwriting it.
 
 > [!TIP]
 > Want to build your own plugin? Check out the official starter: [hamlet-plugin-template](https://github.com/zkreations/hamlet-plugin-template).
@@ -248,7 +279,17 @@ You can create any number of partials and organize them as you wish, just make s
 
 #### Helpers
 
-These helpers are defined by default in the system, and you can use them in your templates or override them in the Handlebars configuration file:
+These helpers are defined by default in the system, and you can use them in your templates. You can add custom helpers in your `hamlet.config.js`:
+
+```js
+export default {
+  helpers: {
+    myHelper: value => value.toUpperCase(),
+  }
+}
+```
+
+Built-in helpers available:
 
 | Helper | Description |
 | ------ | ----------- |

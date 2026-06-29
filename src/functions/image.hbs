@@ -2,7 +2,7 @@
 Create an image tag with optional attributes and responsive support
 @author zkreations
 @param {image} src - Image URL
-@param {array} [srcset] - Array of dimensions
+@param {number[]} [sourceSet] - Array of image widths (e.g. [320, 640, 1024])
 @param {string} [width] - Image width
 @param {string} [height] - Image height
 @param {number} [resize] - Change dimensions
@@ -15,7 +15,7 @@ Create an image tag with optional attributes and responsive support
 @param {string} [crossorigin] - Cross-origin attribute
 @param {string} [decoding] - Decoding attribute
 @param {string} [referrerpolicy] - Referrer policy attribute
-@param {string} [alt] - Alt text for the image
+@param {string} [alt] - Alt text
 @param {string} [params] - Additional parameters for proxy images
 --}}
 <b:includable id='@image'>
@@ -30,8 +30,6 @@ Create an image tag with optional attributes and responsive support
         <b:tag name='img'>
           <b:attr name='b:whitespace' value='remove'/>
           <b:class cond='data:class' expr:name='data:class'/>
-          <b:attr name='width' expr:value='data:width ?: data:image.width'/>
-          <b:attr name='height' expr:value='data:height ?: data:image.height'/>
           {{!-- Add data attributes for each of the specified attributes if they exist --}}
           <b:loop values='["id","sizes","loading","fetchpriority","crossorigin","decoding","referrerpolicy","alt"]' var='attr'>
             <b:with expr:value='+("data:",data:attr)' var='value'>
@@ -44,14 +42,16 @@ Create an image tag with optional attributes and responsive support
             "com/blogger_img_proxy"
           ] any (server => server in data:image)' var='isProxyImg'>
             <b:with value='data:params and data:isProxyImg ? ("-" + data:params) : ""' var='params'>
-              <b:with value='data:srcset ? resizeImage(data:image, data:srcset.first, data:ratio) : data:image' var='src'>
+              <b:with value='data:sourceSet ? resizeImage(data:image, data:sourceSet.first, data:ratio) : data:image' var='image'>
                 <b:attr name='src' expr:value='data:src + data:params'/>
+                <b:attr name='width' expr:value='data:width ?: data:image.width'/>
+                <b:attr name='height' expr:value='data:height ?: data:image.height'/>
               </b:with>
             </b:with>
           </b:with>
-          {{!-- If srcset is provided, generate the srcset attribute using the sourceSet function --}}
-          <b:if cond='data:srcset'>
-            <b:attr name='srcset' expr:value='sourceSet(data:image, data:srcset, data:ratio)'/>
+          {{!-- If sourceSet is provided, generate the srcset attribute --}}
+          <b:if cond='data:sourceSet'>
+            <b:attr name='srcset' expr:value='sourceSet(data:image, data:sourceSet, data:ratio)'/>
           </b:if>
         </b:tag>
       </b:with>

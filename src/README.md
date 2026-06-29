@@ -1,11 +1,13 @@
-# Functions
+# Functions and Overrides
+
+## Functions
 
 The functions are Blogger inclusions that can be used anywhere in the theme and perform a task that is usually repetitive. These inclusions are created to avoid code repetition and facilitate theme maintenance.
 
 > [!NOTE]
 > If a parameter is mandatory, it is indicated with an asterisk (*).
 
-## @ads
+### @ads
 
 Used to create an Adsense ad block.
 
@@ -30,7 +32,7 @@ Used to create an Adsense ad block.
 <b:include name='@ads' data='{ layout: "in-feed" }'/>
 ```
 
-## @adsense
+### @adsense
 
 Includes the Adsense async script in the head of the page.
 
@@ -50,7 +52,7 @@ Includes the Adsense async script in the head of the page.
 <b:include name='@adsense'/>
 ```
 
-## @attr
+### @attr
 
 Used to add or remove multiple attributes from an element. Every array must have two elements, the first is the name of the attribute and the second is the value. When the second element is not specified, the attribute named in the first element will be removed.
 
@@ -76,7 +78,7 @@ Used to add or remove multiple attributes from an element. Every array must have
 
 - [zkreations: Add or remove multiple attributes in one line.](https://www.zkreations.com/2023/04/agrega-multiples-atributos-en-una-sola.html)
 
-## @avatar
+### @avatar
 
 Create the avatar format with any image, and also set a default image different from the one provided by Blogger.
 
@@ -108,7 +110,7 @@ Create the avatar format with any image, and also set a default image different 
 - [zkreations: Generate avatars from an image.](https://www.zkreations.com/2025/03/genera-avatares-partir-de-una-imagen.html)
 
 
-## @image
+### @image
 
 Insert a custom image tag. It accepts image parameters along with other HTML attributes.
 
@@ -144,7 +146,7 @@ Insert a custom image tag. It accepts image parameters along with other HTML att
 
 - [zkreations: Manipulate images in Blogger easily](https://www.zkreations.com/2023/09/manipula-imagenes-en-blogger-facilmente.html)
 
-## @kind
+### @kind
 
 Used to add classes to the body tag based on the current view.
 
@@ -164,7 +166,7 @@ Used to add classes to the body tag based on the current view.
 <b:include name='@kind'/>
 ```
 
-## @menu
+### @menu
 
 Create a list of links using a PageList widget link list
 
@@ -193,7 +195,7 @@ Create a list of links using a PageList widget link list
 
 - [zkreations: Dropdown menu with the links object](https://www.zkreations.com/2023/11/menu-desplegable-con-el-objeto-links.html)
 
-## @meta
+### @meta
 
 Creates the header metadata for the page, including favicons, description, canonical URL, robots, Open Graph, and Twitter tags. It's a modern replacement for Blogger's global inclusion `all-head-content`.
 
@@ -220,7 +222,7 @@ Creates the header metadata for the page, including favicons, description, canon
 <b:include name='@meta' data='{ robots: "noindex,nofollow" }'/>
 ```
 
-## @picture
+### @picture
 
 Create a custom picture tag. It accepts image parameters along with other HTML attributes.
 
@@ -255,7 +257,7 @@ Create a custom picture tag. It accepts image parameters along with other HTML a
 
 - [zkreations: Generate responsive images with the picture tag](https://www.zkreations.com/2023/09/generar-imagenes-responsive-picture.html)
 
-## @snippet
+### @snippet
 
 Creates a snippet of a string. It allows you to specify the length of the string, the HTML tag to be used, and whether to include ellipsis at the end.
 
@@ -286,11 +288,11 @@ Creates a snippet of a string. It allows you to specify the length of the string
 
 - [zkreations: Create truncated text blocks in Blogger](https://www.zkreations.com/2025/03/crea-bloques-de-texto-truncados.html)
 
-# Overrides
+## Overrides
 
 Overrides are Blogger inclusions that can be used in specific parts of the theme and serve to override inclusions that Blogger generates automatically.
 
-## defaultmarkups
+### defaultmarkups
 
 Generates a list of Blogger's default inclusions and all its widgets that are closed. By doing this, it prevents Blogger from generating its own inclusions.
 

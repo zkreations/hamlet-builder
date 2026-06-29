@@ -90,10 +90,18 @@ Create the avatar format with any image, and also set a default image different 
 |--------|------|-------------|------------------|
 | `src` | string | Avatar image URL. | - |
 | `default` | string | Default image URL. | [default-user](https://lh3.googleusercontent.com/a/default-user) |
-| `resize` | number | Resize image to a specific size. | 40 |
-| `alt` | string | Alt text for the image. | `data:messages.image` |
-| `class` | string | Additional classes for the image. | - |
-| `loading` | string | Loading attribute for the image. | - |
+| `width` | number | Avatar image width. | `resize.width` |
+| `height` | number | Avatar image height. | `resize.height` |
+| `resize` | number | Resize image to a specific size. | `40` |
+| `id` | string | Unique ID for the avatar. | - |
+| `class` | string | Additional classes for the avatar. | - |
+| `sizes` | string | Sizes attribute for the avatar. | - |
+| `loading` | string | Loading attribute for the avatar. | - |
+| `fetchpriority` | string | Fetch priority attribute for the avatar. | - |
+| `crossorigin` | string | Cross-origin attribute for the avatar. | - |
+| `decoding` | string | Decoding attribute for the avatar. | - |
+| `referrerpolicy` | string | Referrer policy attribute for the avatar. | - |
+| `alt` | string | Alt text for the avatar. | - |
 
 #### Include partial
 

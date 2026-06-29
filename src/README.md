@@ -122,8 +122,8 @@ Insert a custom image tag. It accepts image parameters along with other HTML att
 |--------|------|-------------|------------------|
 | `src` | string | Image URL. | - |
 | `srcset` | array | Array of dimensions for the image. | - |
-| `width` | string | Image width. | - |
-| `height` | string | Image height. | - |
+| `width` | string | Image width. | `resize.width` |
+| `height` | string | Image height. | `resize.height` |
 | `resize` | number | Resize image to a specific size. | - |
 | `ratio` | string | Aspect ratio for the image. | - |
 | `id` | string | Unique ID for the image. | - |
@@ -134,7 +134,7 @@ Insert a custom image tag. It accepts image parameters along with other HTML att
 | `crossorigin` | string | Cross-origin attribute for the image. | - |
 | `decoding` | string | Decoding attribute for the image. | - |
 | `referrerpolicy` | string | Referrer policy attribute for the image. | - |
-| `alt` | string | Alt text for the image. | `data:messages.image` |
+| `alt` | string | Alt text for the image. | - |
 | `params` | string | Additional [Google image parameters](https://www.zkreations.com/image-params). | - |
 
 #### Include partial

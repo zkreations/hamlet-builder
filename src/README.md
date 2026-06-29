@@ -1,5 +1,7 @@
 # Functions and Overrides
 
+This folder contains the functions and overrides that are used in the theme. Functions are inclusions that can be used anywhere in the theme, while overrides are inclusions that can be used in specific parts of the theme to override Blogger's default inclusions.
+
 ## Functions
 
 The functions are Blogger inclusions that can be used anywhere in the theme and perform a task that is usually repetitive. These inclusions are created to avoid code repetition and facilitate theme maintenance.
@@ -119,16 +121,20 @@ Insert a custom image tag. It accepts image parameters along with other HTML att
 | Name | Type | Description | Default Value |
 |--------|------|-------------|------------------|
 | `src` | string | Image URL. | - |
-| `alt` | string | Alt text for the image. | `data:messages.image` |
-| `id` | string | Unique ID for the image. | - |
-| `class` | string | Additional classes for the image. | - |
+| `srcset` | array | Array of dimensions for the image. | - |
 | `width` | string | Image width. | - |
 | `height` | string | Image height. | - |
 | `resize` | number | Resize image to a specific size. | - |
 | `ratio` | string | Aspect ratio for the image. | - |
-| `sizes` | string | Sizes attribute value. | - |
-| `srcset` | array | Array of dimensions for the image. | - |
+| `id` | string | Unique ID for the image. | - |
+| `class` | string | Additional classes for the image. | - |
+| `sizes` | string | Sizes attribute for the image. | - |
 | `loading` | string | Loading attribute for the image. | - |
+| `fetchpriority` | string | Fetch priority attribute for the image. | - |
+| `crossorigin` | string | Cross-origin attribute for the image. | - |
+| `decoding` | string | Decoding attribute for the image. | - |
+| `referrerpolicy` | string | Referrer policy attribute for the image. | - |
+| `alt` | string | Alt text for the image. | `data:messages.image` |
 | `params` | string | Additional [Google image parameters](https://www.zkreations.com/image-params). | - |
 
 #### Include partial

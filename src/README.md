@@ -121,7 +121,7 @@ Insert a custom image tag. It accepts image parameters along with other HTML att
 | Name | Type | Description | Default Value |
 |--------|------|-------------|------------------|
 | `src` | string | Image URL. | - |
-| `srcset` | array | Array of dimensions for the image. | - |
+| `sourceSet` | number[] | Array of dimensions for the image. | - |
 | `width` | string | Image width. | `resize.width` |
 | `height` | string | Image height. | `resize.height` |
 | `resize` | number | Resize image to a specific size. | - |

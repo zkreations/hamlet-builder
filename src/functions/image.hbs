@@ -25,7 +25,7 @@ Create an image tag with optional attributes and responsive support
       : data:src' var='baseImage'>
       <b:with value='(data:resize
         ? resizeImage(data:baseImage, data:resize, data:ratio)
-        : (data:baseImage)
+        : data:baseImage
       )' var='image'>
         <b:tag name='img'>
           <b:attr name='b:whitespace' value='remove'/>
@@ -43,7 +43,7 @@ Create an image tag with optional attributes and responsive support
           ] any (server => server in data:image)' var='isProxyImg'>
             <b:with value='data:params and data:isProxyImg ? ("-" + data:params) : ""' var='params'>
               <b:with value='data:sourceSet ? resizeImage(data:image, data:sourceSet.first, data:ratio) : data:image' var='image'>
-                <b:attr name='src' expr:value='data:src + data:params'/>
+                <b:attr name='src' expr:value='data:image + data:params'/>
                 <b:attr name='width' expr:value='data:width ?: data:image.width'/>
                 <b:attr name='height' expr:value='data:height ?: data:image.height'/>
               </b:with>

@@ -1,61 +1,60 @@
 {{!--
-Create custom image tag
+Create an image tag with optional attributes and responsive support
 @author zkreations
-@param {image} src - Image url
-@param {string} [alt=data:messages.image] - Fallback text
-@param {string} [id] - Unique id
-@param {string} [class] - Additional classes
+@param {image} src - Image URL
+@param {array} [srcset] - Array of dimensions
 @param {string} [width] - Image width
 @param {string} [height] - Image height
 @param {number} [resize] - Change dimensions
 @param {string} [ratio] - Aspect ratio
-@param {string} [sizes] - Sizes attribute value
-@param {array} [srcset] - Array of dimensions
+@param {string} [id] - Image ID
+@param {string} [class] - Additional classes
+@param {string} [sizes] - Sizes attribute
 @param {string} [loading] - Loading attribute
-@param {string} [params] - Additional Google image parameters (zkreations.com/image-params)
+@param {string} [fetchpriority] - Fetch priority attribute
+@param {string} [crossorigin] - Cross-origin attribute
+@param {string} [decoding] - Decoding attribute
+@param {string} [referrerpolicy] - Referrer policy attribute
+@param {string} [alt] - Alt text for the image
+@param {string} [params] - Additional parameters for proxy images
 --}}
 <b:includable id='@image'>
   <b:if cond='data:src'>
-    {{!-- Check if image is hosted on Blogger --}}
     <b:with value='data:src.isYoutube
       ? data:src.youtubeMaxResDefaultUrl
-      : data:src' var='source'>
-    <b:with value='(data:resize
-      ? resizeImage(data:source, data:resize, data:ratio)
-      : (data:source))' var='image'>
-      <b:tag expr:alt='data:alt ?: data:messages.image' name='img'>
-        {{!-- Close tag --}}
-        <b:attr name='b:whitespace' value='remove'/>
-        {{!-- Id and class --}}
-        <b:attr name='id' expr:value='data:id'/>
-        <b:class cond='data:class' expr:name='data:class'/>
-        {{!-- Width and height --}}
-        <b:attr name='width' expr:value='data:width ?: data:image.width'/>
-        <b:attr name='height' expr:value='data:height ?: data:image.height'/>
-        {{!-- Sizes attribute --}}
-        <b:attr name='sizes' expr:value='data:sizes'/>
-        {{!-- Loading attribute --}}
-        <b:attr name='loading' expr:value='data:loading'/>
-        {{!-- Check if image is hosted on Google for additional parameters --}}
-        <b:with value='[
-          "content.com/img/a/",
-          "content.com/blogger_img_proxy"
-        ]' var='servers'>
-        <b:with value='data:params and (data:servers any (server => server in data:image))
-          ? ("-" + data:params)
-          : ""' var='params'>
-          {{!-- If srcset exists, generate the src attribute --}}
-          <b:attr name='src' expr:value='(data:srcset
-            ? resizeImage(data:image, data:srcset.first, data:ratio)
-            : data:image) + data:params'/>
-        </b:with>
-        </b:with>
-        {{!-- If srcset exists, generate the srcset attribute --}}
-        <b:if cond='data:srcset'>
-          <b:attr name='srcset' expr:value='sourceSet(data:image, data:srcset, data:ratio)'/>
-        </b:if>
-      </b:tag>
-    </b:with>
+      : data:src' var='baseImage'>
+      <b:with value='(data:resize
+        ? resizeImage(data:baseImage, data:resize, data:ratio)
+        : (data:baseImage)
+      )' var='image'>
+        <b:tag name='img'>
+          <b:attr name='b:whitespace' value='remove'/>
+          <b:class cond='data:class' expr:name='data:class'/>
+          <b:attr name='width' expr:value='data:width ?: data:image.width'/>
+          <b:attr name='height' expr:value='data:height ?: data:image.height'/>
+          {{!-- Add data attributes for each of the specified attributes if they exist --}}
+          <b:loop values='["id","sizes","loading","fetchpriority","crossorigin","decoding","referrerpolicy","alt"]' var='attr'>
+            <b:with expr:value='+("data:",data:attr)' var='value'>
+              <b:attr expr:name='data:attr' expr:value='data:value'/>
+            </b:with>
+          </b:loop>
+          {{!-- Check if the image is from a proxy server and append parameters if necessary --}}
+          <b:with value='[
+            "com/img/a/",
+            "com/blogger_img_proxy"
+          ] any (server => server in data:image)' var='isProxyImg'>
+            <b:with value='data:params and data:isProxyImg ? ("-" + data:params) : ""' var='params'>
+              <b:with value='data:srcset ? resizeImage(data:image, data:srcset.first, data:ratio) : data:image' var='src'>
+                <b:attr name='src' expr:value='data:src + data:params'/>
+              </b:with>
+            </b:with>
+          </b:with>
+          {{!-- If srcset is provided, generate the srcset attribute using the sourceSet function --}}
+          <b:if cond='data:srcset'>
+            <b:attr name='srcset' expr:value='sourceSet(data:image, data:srcset, data:ratio)'/>
+          </b:if>
+        </b:tag>
+      </b:with>
     </b:with>
   <b:else/>
     <b:comment render='true'>Parameter [src] is required.</b:comment>

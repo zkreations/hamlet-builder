@@ -1,10 +1,14 @@
 {{!--
 Add or remove multiple attributes
 @author zkreations
-@arg {Array[Array]} - Arrays of attributes to add or remove
+@param {Array<[String, String]>} data - Array of attribute name-value pairs
 --}}
 <b:includable id='@attr'>
-  <b:loop values='data:' var='i'>
-    <b:attr expr:name='data:i[0] ?: "null"' expr:value='data:i[1]'/>
-  </b:loop>
+  <b:if cond='data:'>
+    <b:loop values='data:' var='i'>
+      <b:attr expr:name='data:i[0] ?: "null"' expr:value='data:i[1]'/>
+    </b:loop>
+  <b:else/>
+    <b:comment render='true'>Parameter [data] is required.</b:comment>
+  </b:if>
 </b:includable>

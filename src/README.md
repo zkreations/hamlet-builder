@@ -192,8 +192,13 @@ Create a list of links using a PageList widget link list
 |--------|------|-------------|------------------|
 | `links` | array | Array of links. | - |
 | `prefix` | string | Prefix for filter links. | `__` |
-| `class` | string | Class for the menu. | - |
 | `id` | string | Id for the menu. | - |
+| `class` | string | Class for the menu. | - |
+| `itemClass` | string | Base class for the items (li). | - |
+| `subnavClass` | string | Class for the nested submenus (ul). | - |
+| `linkClass` | string | Base class for the anchors (a). | - |
+| `hereClass` | string | State class when the link matches the current URL. | - |
+| `externalClass` | string | State class for external references. | - |
 
 #### Include partial
 

@@ -166,7 +166,9 @@ Used to add classes to the body tag based on the current view.
 
 #### Parameters
 
-> This includable does not accept any parameters.
+| Name | Type | Description | Default Value |
+|--------|------|-------------|------------------|
+| `viewId` | boolean | Add class based on ID | `true` |
 
 #### Include partial
 

@@ -1,6 +1,7 @@
 {{!--
 add classes to body tag based on the current view
 @author zkreations
+@param {boolean} [viewId=true] - Add class based on ID (e.g. postId, pageId)
 --}}
 <b:includable id='@kind'>
   <b:class cond='data:view.isHomepage' name='is-home'/>
@@ -13,5 +14,8 @@ add classes to body tag based on the current view
   <b:class cond='data:view.isError' name='is-error'/>
   <b:class cond='data:view.isPreview' name='is-preview'/>
   {{!-- add class based on the current post/page id --}}
-  <b:class cond='data:view.isSingleItem' expr:name='"is-single single-id-" + (data:view.postId ?: data:view.pageId)'/>
+  <b:if cond='data:view.isSingleItem'>
+    <b:class name='is-single'/>
+    <b:class cond='data:viewId != false' expr:name='"single-id-" + (data:view.postId ?: data:view.pageId)'/>
+  </b:if>
 </b:includable>

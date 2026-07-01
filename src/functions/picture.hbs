@@ -1,58 +1,68 @@
 {{!--
-Create custom picture tag
+Create a responsive custom picture tag using native Blogger image sizing.
 @author zkreations
-@param {image} src - Image url
-@param {array} [resizeSet=[700,400]] - Change dimensions
-@param {string} [alt=data:messages.image] - Fallback text
-@param {string} [id] - Unique id
-@param {string} [class] - Additional classes
-@param {string} [width] - Image width
-@param {string} [height] - Image height
-@param {string} [ratio] - Aspect ratio
+@param {image} src - Image URL or Blogger image object
+@param {number[]} [sourceSet=[700,400]] - Array of widths for the responsive sources
+@param {Number} [width] - Explicit image width for the fallback img
+@param {Number} [height] - Explicit image height for the fallback img
+@param {String} [ratio] - Aspect ratio (e.g., "16:9", "1:1")
+@param {String} [id] - Unique identifier for the img tag
+@param {String} [class] - Additional CSS classes for the img tag
+@param {String} [imgClass] - CSS classes for the fallback img tag
+@param {string} [sizes] - Sizes attribute
 @param {string} [loading] - Loading attribute
-@param {string} [params] - Additional Google image parameters (zkreations.com/image-params)
+@param {string} [fetchpriority] - Fetch priority attribute
+@param {string} [crossorigin] - Cross-origin attribute
+@param {string} [decoding] - Decoding attribute
+@param {string} [referrerpolicy] - Referrer policy attribute
+@param {string} [alt] - Alt text
+@param {string} [params] - Additional parameters for proxy images
 --}}
 <b:includable id='@picture'>
   <b:if cond='data:src'>
-  <picture>
-    {{!-- Check if image is hosted on Blogger --}}
-    <b:with value='data:src.isYoutube
-      ? data:src.youtubeMaxResDefaultUrl
-      : data:src' var='source'>
-    <b:with value='{
-        set: resizeImage(data:source, (data:resizeSet ?: [700,400]), data:ratio),
-        size: resizeImage(data:source, (data:resizeSet.first ?: 600), data:ratio),
-      }' var='images'>
-      {{!-- Generate all sizes --}}
-      <b:loop reverse='true' index='i' values='data:images.set' var='image'>
-        {{!-- Check if image is hosted on Google for additional parameters --}}
-        <b:with value='[
-          "content.com/img/a/",
-          "content.com/blogger_img_proxy"
-        ]' var='servers'>
-        <b:with value='data:params and (data:servers any (server => server in data:image.url))
-          ? (data:image.url + "-" + data:params)
-          : data:image.url' var='imageUrl'>
-          <b:if cond='data:images.set.size != (data:i + 1)'>
-            <source expr:media='"(min-width:" + data:image.size + "px)"' expr:srcset='data:imageUrl'/>
-          <b:else/>
-            {{!-- Generate the last size --}}
-            <b:tag expr:src='data:imageUrl' expr:alt='data:alt ?: data:messages.image' name='img'>
-              <b:attr name='b:whitespace' value='remove'/>
-              {{!-- Attributes --}}
-              <b:class cond='data:class' expr:name='data:class'/>
-              <b:attr name='width' expr:value='data:width ?: data:images.size.width'/>
-              <b:attr name='height' expr:value='data:height ?: data:images.size.height'/>
-              <b:attr name='id' expr:value='data:id'/>
-              <b:attr name='loading' expr:value='data:loading'/>
-            </b:tag>
-          </b:if>
+    <picture>
+      <b:class cond='data:class' expr:name='data:class'/>
+      <b:with value='data:src.isYoutube
+        ? data:src.youtubeMaxResDefaultUrl
+        : data:src' var='baseImage'>
+        <b:with value='data:sourceSet ?: [700, 400]' var='availableSizes'>
+          {{!-- Check if the image is from a proxy server and append parameters if necessary --}}
+          <b:with value='[
+            "com/img/a/",
+            "com/blogger_img_proxy"
+          ] any (server => server in data:baseImage)' var='isProxyImg'>
+            <b:with value='data:params and data:isProxyImg ? ("-" + data:params) : ""' var='params'>
+              {{!-- Generate <source> tags for each size in the sourceSet array --}}
+              <b:loop index='i' values='data:availableSizes' var='size'>
+                <b:if cond='data:i + 1 != data:availableSizes.length'>
+                  <b:with value='resizeImage(data:baseImage, data:size, data:ratio)' var='sourceUrl'>
+                    <source expr:media='"(min-width: " + data:size + "px)"' expr:srcset='data:sourceUrl + data:params'/>
+                  </b:with>
+                </b:if>
+              </b:loop>
+              {{!-- Fallback <img> tag for the last size in the sourceSet array --}}
+              <b:with value='data:availableSizes.last ?: 600' var='fallbackSize'>
+                <b:with value='resizeImage(data:baseImage, data:fallbackSize, data:data:ratio)' var='fallbackUrl'>
+                  <b:tag name='img'>
+                    <b:attr name='b:whitespace' value='remove'/>
+                    <b:class cond='data:imgClass' expr:name='data:imgClass'/>
+                    {{!-- Add data attributes for each of the specified attributes if they exist --}}
+                    <b:loop values='["id","sizes","loading","fetchpriority","crossorigin","decoding","referrerpolicy","alt"]' var='attr'>
+                      <b:with expr:value='+("data:",data:attr)' var='value'>
+                        <b:attr expr:name='data:attr' expr:value='data:value'/>
+                      </b:with>
+                    </b:loop>
+                    <b:attr name='width' expr:value='data:width ?: data:fallbackUrl.width'/>
+                    <b:attr name='height' expr:value='data:height ?: data:fallbackUrl.height'/>
+                    <b:attr name='src' expr:value='data:fallbackUrl + data:params'/>
+                  </b:tag>
+                </b:with>
+              </b:with>
+            </b:with>
+          </b:with>
         </b:with>
-        </b:with>
-      </b:loop>
-    </b:with>
-    </b:with>
-  </picture>
+      </b:with>
+    </picture>
   <b:else/>
     <b:comment render='true'>Parameter [src] is required.</b:comment>
   </b:if>

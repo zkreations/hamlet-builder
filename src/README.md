@@ -256,14 +256,20 @@ Create a custom picture tag. It accepts image parameters along with other HTML a
 | Name | Type | Description | Default Value |
 |--------|------|-------------|------------------|
 | `src` | string | Image URL. | - |
-| `resizeSet` | array | Array of dimensions for the image. | `[700,400]` |
-| `alt` | string | Alt text for the image. | `data:messages.image` |
-| `id` | string | Unique ID for the image. | - |
-| `class` | string | Additional classes for the image. | - |
+| `sourceSet` | array | Array of dimensions for the image. | `[700,400]` |
 | `width` | string | Image width. | - |
 | `height` | string | Image height. | - |
 | `ratio` | string | Aspect ratio for the image. | - |
+| `id` | string | Unique ID for the image. | - |
+| `class` | string | Additional classes for the picture tag. | - |
+| `imgClass` | string | Additional classes for the fallback img tag. | - |
+| `sizes` | string | Sizes attribute for the image. | - |
 | `loading` | string | Loading attribute for the image. | - |
+| `fetchpriority` | string | Fetch priority attribute for the image. | - |
+| `crossorigin` | string | Cross-origin attribute for the image. | - |
+| `decoding` | string | Decoding attribute for the image. | - |
+| `referrerpolicy` | string | Referrer policy attribute for the image. | - |
+| `alt` | string | Alt text for the image. | - |
 | `params` | string | Additional [Google image parameters](https://www.zkreations.com/image-params). | - |
 
 #### Include partial
@@ -280,7 +286,7 @@ Create a custom picture tag. It accepts image parameters along with other HTML a
 
 #### References
 
-- [zkreations: Generate responsive images with the picture tag](https://www.zkreations.com/2023/09/generar-imagenes-responsive-picture.html)
+- [zkreations: @picture Function for Blogger](https://www.zkreations.com/2023/09/generar-imagenes-responsive-picture.html)
 
 ### @snippet
 

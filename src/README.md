@@ -78,7 +78,7 @@ Used to add or remove multiple attributes from an element. Every array must have
 
 #### References
 
-- [zkreations: Add or remove multiple attributes in one line.](https://www.zkreations.com/2023/04/agrega-multiples-atributos-en-una-sola.html)
+- [zkreations: @attr Function for Blogger](https://www.zkreations.com/2023/04/agrega-multiples-atributos-en-una-sola.html)
 
 ### @avatar
 
@@ -117,7 +117,7 @@ Create the avatar format with any image, and also set a default image different 
 
 #### References
 
-- [zkreations: Generate avatars from an image.](https://www.zkreations.com/2025/03/genera-avatares-partir-de-una-imagen.html)
+- [zkreations: @avatar Function for Blogger](https://www.zkreations.com/2025/03/genera-avatares-partir-de-una-imagen.html)
 
 
 ### @image
@@ -158,7 +158,7 @@ Insert a custom image tag. It accepts image parameters along with other HTML att
 
 #### References
 
-- [zkreations: Manipulate images in Blogger easily](https://www.zkreations.com/2023/09/manipula-imagenes-en-blogger-facilmente.html)
+- [zkreations: @image Function for Blogger](https://www.zkreations.com/2023/09/manipula-imagenes-en-blogger-facilmente.html)
 
 ### @kind
 
@@ -214,7 +214,7 @@ Create a list of links using a PageList widget link list
 
 #### References
 
-- [zkreations: Dropdown menu with the links object](https://www.zkreations.com/2023/11/menu-desplegable-con-el-objeto-links.html)
+- [zkreations: @menu Function for Blogger](https://www.zkreations.com/2023/11/menu-desplegable-con-el-objeto-links.html)
 
 ### @meta
 
@@ -242,6 +242,10 @@ Creates the header metadata for the page, including favicons, description, canon
 ```xml
 <b:include name='@meta' data='{ robots: "noindex,nofollow" }'/>
 ```
+
+#### References
+
+- [zkreations: @meta Function for Blogger](https://www.zkreations.com/2026/07/funcion-meta-para-blogger.html)
 
 ### @picture
 

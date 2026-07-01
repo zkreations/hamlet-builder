@@ -224,12 +224,12 @@ Creates the header metadata for the page, including favicons, description, canon
 
 | Name | Type | Description | Default Value |
 |--------|------|-------------|------------------|
-| `cardType` | string | Twitter card type. | `summary_large_image` |
-| `forceHttps` | boolean | Force https on Canonicals URL. | - |
-| `favicon` | string | URL of multiple resolutions favicon. | - |
-| `favSizes` | array | Array of numbers/dimensions for favicons. | `[32,96,180,192]` |
+| `icon` | string | URL of multiple resolutions favicon. | - |
+| `iconSizes` | array | Array of numbers/dimensions for favicons. | `[32,96,180,192]` |
 | `robots` | string | Custom meta robots specifications. | `index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1` |
-| `ogImage` | string | Default social networks image. | - |
+| `defaultImage` | string | Default social networks image. | - |
+| `twitterCard` | string | Twitter card type. | `summary_large_image` |
+| `twitterSite` | string | Twitter/X handle of the website. | - |
 
 #### Include partial
 

@@ -312,12 +312,12 @@ Creates a snippet of a string. It allows you to specify the length of the string
 #### Usage example
 
 ```xml
-<b:include name='@snippet' data='{ string: data:post.snippets.long, length: 100 }'/>
+<b:include name='@snippet' data='{ text: data:post.snippets.long, limit: 100 }'/>
 ```
 
 #### References
 
-- [zkreations: Create truncated text blocks in Blogger](https://www.zkreations.com/2025/03/crea-bloques-de-texto-truncados.html)
+- [zkreations: @snippet Function for Blogger](https://www.zkreations.com/2025/03/crea-bloques-de-texto-truncados.html)
 
 ## Overrides
 

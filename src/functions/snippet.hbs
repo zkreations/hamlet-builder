@@ -1,38 +1,41 @@
 {{!--
-Creates a snippet of a string
+Creates a clean text snippet of a string with conditional ellipsis support.
 @author zkreations
-@param {string} string - Text to be shortened
-@param {string} [tag="p"] - Container HTML tag
-@param {string} [class] - Container class
-@param {string} [id] - Container id
-@param {number} [length=70] - Length of the string
-@param {string} [ellipsis="..."] - Ellipsis to be added at the end of the string
+@param {String} [text=""] - Text or HTML content to be shortened
+@param {String} [tag="p"] - Container HTML tag name
+@param {String} [id] - Container HTML id
+@param {String} [class] - Container CSS class
+@param {Number} [limit=70] - Maximum length of the string
+@param {String} [ellipsis="..."] - Ellipsis to be added only if the text is truncated
 --}}
 <b:includable id='@snippet'>
-  <b:if cond='data:string and (data:string snippet {
-      links: false,
-      ellipsis: false,
-      linebreaks: false
-    }) != ""'>
-    {{!-- Sanitize length --}}
-    <b:with value='data:length ?: 70' var='length'>
-    <b:with value='(data:length + 0) == data:length ? (data:length * 1) : 70' var='length'>
-      {{!-- Create snippet container tag --}}
-      <b:tag expr:name='data:tag ?: "p"'>
-        {{!-- Add snippet container class and id --}}
-        <b:class cond='data:class' expr:name='data:class'/>
-        <b:attr name='id' expr:value='data:id'/>
-        {{!-- Add snippet content --}}
-        <b:eval expr='(data:string snippet {
-            length: data:length,
+  <b:with value='data:text ? (data:text snippet {
+    links: false,
+    ellipsis: false,
+    linebreaks: false
+  }) : ""' var='cleanString'>
+    <b:if cond='data:cleanString != ""'>
+      {{!-- Ensure the limit is a number and set a default if not provided --}}
+      <b:with value='(data:limit + 0) == data:limit ? (data:limit * 1) : 70' var='maxLength'>
+        <b:tag expr:name='data:tag ?: "p"'>
+          <b:class cond='data:class' expr:name='data:class'/>
+          <b:attr name='id' expr:value='data:id'/>
+          {{!-- Truncate the clean string to the specified maximum length and append ellipsis if necessary --}}
+          <b:with value='data:cleanString snippet {
+            length: data:maxLength,
             links: false,
             ellipsis: false,
             linebreaks: false
-          }) + (data:ellipsis ?: "...")'/>
-      </b:tag>
-    </b:with>
-    </b:with>
-  <b:else/>
-    <b:comment render='true'>No text to display</b:comment>
-  </b:if>
+          }' var='truncatedText'>
+            {{!-- Render the truncated text and conditionally add ellipsis if the original string exceeds the maximum length --}}
+            <b:eval expr='data:truncatedText + (
+              data:cleanString.size > data:maxLength ? (data:ellipsis ?: "...") : ""
+            )'/>
+          </b:with>
+        </b:tag>
+      </b:with>
+    <b:else/>
+      <b:comment render='true'>No visible text to display after sanitization.</b:comment>
+    </b:if>
+  </b:with>
 </b:includable>

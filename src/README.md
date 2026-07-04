@@ -119,6 +119,33 @@ Create the avatar format with any image, and also set a default image different 
 
 - [zkreations: @avatar Function for Blogger](https://www.zkreations.com/2025/03/genera-avatares-partir-de-una-imagen.html)
 
+### @contrast
+
+Evaluates a color's brightness and exposes its contrast state.
+
+#### Parameters
+
+| Name | Type | Description | Default Value |
+|--------|------|-------------|------------------|
+| `color` | Color | Color variable from data:skin.vars. | - |
+| `threshold` | number | Brightness limit to trigger the dark state (0-255). | `155` |
+| `attr` | string | Target attribute name to render. | `data-theme` |
+
+#### Include partial
+
+```hbs
+{{> hamlet.contrast}}
+```
+
+### Usage example
+
+```xml
+<b:include name='@contrast' data='{ color: data:skin.vars.background, threshold: 150 }'/>
+```
+
+#### References
+
+- [zkreations: @contrast Function for Blogger](https://www.zkreations.com/2023/01/calcular-oscuridad-color-blogger.html)
 
 ### @image
 

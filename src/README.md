@@ -296,12 +296,12 @@ Creates a snippet of a string. It allows you to specify the length of the string
 
 | Name | Type | Description | Default Value |
 |--------|------|-------------|------------------|
-| `string` | string | Text to be shortened. | - |
-| `tag` | string | Container HTML tag. | `p` |
-| `class` | string | Container class. | - |
-| `id` | string | Container id. | - |
-| `length` | number | Length of the string. | `70` |
-| `ellipsis` | string | Ellipsis to be added at the end of the string. | `...` |
+| `text` | string | Text or HTML content to be shortened. | `""` |
+| `tag` | string | Container HTML tag name. | `"p"` |
+| `id` | string | Container HTML id. | - |
+| `class` | string | Container CSS class. | - |
+| `limit` | number | Maximum length of the string. | `70` |
+| `ellipsis` | string | Ellipsis to be added only if the text is truncated. | `"..."` |
 
 #### Include partial
 

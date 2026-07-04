@@ -1,0 +1,16 @@
+{{!--
+Evaluates a color's brightness and exposes its contrast state.
+@author zkreations
+@param {Color} color - Color variable from data:skin.vars
+@param {Number} [threshold=155] - Brightness limit to trigger the dark state (0-255)
+@param {String} [attr="data-theme"] - Target attribute name to render
+--}}
+<b:includable id='@contrast'>
+  <b:with value='+((data:color.red * 0.299), (data:color.green * 0.587), (data:color.blue * 0.114))' var='brightness'>
+    <b:with value='(data:threshold + 0) == data:threshold ? (data:threshold * 1) : 155' var='limit'>
+      <b:attr expr:name='data:attr ?: "data-theme"' expr:value='data:brightness lt data:limit
+        ? "dark"
+        : "light"'/>
+    </b:with>
+  </b:with>
+</b:includable>

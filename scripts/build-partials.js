@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
-import { ESLint } from 'eslint'
 import { globSync } from 'glob'
 
 const baseDir = path.join(process.cwd(), 'src')
@@ -34,22 +33,9 @@ Object.entries(folders).forEach(([folder, partialList]) => {
     return
   }
 
-  const folderPartialName = `hamlet.${folder}`
-  partials[folderPartialName] = `${partialList.join('\n')}\n`
+  partials[`hamlet.${folder}`] = `${partialList.join('\n')}\n`
 })
 
-const jsContent = `export const hamletPartials = ${JSON.stringify(partials, null, 2)}\n`
-
-async function formatWithESLint(code) {
-  const eslint = new ESLint({ fix: true })
-  const results = await eslint.lintText(code)
-  return results[0]?.output || code
-}
-
-async function generateFile() {
-  const formattedCode = await formatWithESLint(jsContent)
-  fs.writeFileSync(path.join(outputDir, 'partials.js'), formattedCode)
-  console.log('partials.js has been generated successfully with ESLint formatting!')
-}
-
-generateFile().catch(console.error)
+const content = `// This file is auto-generated. Do not edit it manually.\nexport const hamletPartials = ${JSON.stringify(partials, null, 2)}\n`
+fs.writeFileSync(path.join(outputDir, 'partials.js'), content)
+console.log('partials.js has been generated successfully!')

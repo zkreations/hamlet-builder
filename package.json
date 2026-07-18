@@ -18,7 +18,8 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build:partials": "node ./scripts/build-partials.js"
+    "build:partials": "node ./scripts/build-partials.js",
+    "prepublishOnly": "npm run build:partials"
   },
   "dependencies": {
     "@rollup/plugin-babel": "^7.1.0",

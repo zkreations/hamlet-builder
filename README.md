@@ -181,6 +181,21 @@ The data will be the context of the Handlebars templates, so you can access them
 {{author}}
 ```
 
+In addition to theme data, the following variables are always available in every template:
+
+| Variable | Type | Description |
+| -------- | ---- | ----------- |
+| `defaultmarkups` | object | Blogger widget markup definitions used by `{{> hamlet.defaultmarkups}}` |
+| `development` | boolean | `true` when `--mode development`, `false` otherwise |
+
+Example usage of the `development` variable:
+
+```handlebars
+{{#if development}}
+  <!-- debug info only visible in development mode -->
+{{/if}}
+```
+
 ### Browserlist
 
 Add a `.browserslistrc` or add the information in the `package.json` file using the `browserslist` key. Here is an example of configuration:
@@ -359,19 +374,29 @@ There are predefined partials that you can use in your templates. These are iden
 
 | Partial | Description |
 | ------- | ----------- |
-| `hamlet.defaultmarkups` | Clean and include the default widgets of Blogger |
-| `hamlet.ads` | Function: Create adsense ads |
+| `hamlet.defaultmarkups` | Override: suppress Blogger's auto-generated widget inclusions |
+| `hamlet.overrides` | Include all override partials at once |
+| `hamlet.functions` | Include all function partials at once |
+| `hamlet.ads` | Function: Create AdSense ads |
 | `hamlet.adsense` | Function: AdSense async script |
 | `hamlet.attr` | Function: Add or remove multiple attributes |
 | `hamlet.avatar` | Function: Replace the default avatar image with a custom image |
+| `hamlet.contrast` | Function: Evaluate color brightness and expose contrast state |
 | `hamlet.image` | Function: Create custom image tag |
-| `hamlet.kind` | Function: add classes to body tag based on the current view |
+| `hamlet.kind` | Function: Add classes to body tag based on the current view |
 | `hamlet.menu` | Function: Create a menu from a list of links |
 | `hamlet.meta` | Function: Generate meta tags |
 | `hamlet.picture` | Function: Create custom picture tag |
 | `hamlet.snippet` | Function: Create a snippet of a string |
-| `hamlet.skinVars` | Function: Generate CSS variables from the skin data |
-| `hamlet.functions` | Include all functions partials |
+| `hamlet.skinVars` | Generated: CSS variables derived from skin `Group` variables at build time |
+
+`hamlet.functions` includes all function partials in a single call, which is equivalent to including each of the function partials individually. Use it at the top of your template to make all functions available:
+
+```handlebars
+{{> hamlet.functions}}
+```
+
+`hamlet.skinVars` is not a callable function — it is automatically generated at build time by scanning `<Group>` sections in your source files and converting `color`, `background`, and `font` type variables into CSS custom properties. No parameters are accepted.
 
 ## Additional features
 

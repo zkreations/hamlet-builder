@@ -139,9 +139,6 @@ export default {
 }
 ```
 
-> [!NOTE]
-> The `babel` plugins are used by default if a configuration file is not specified.
-
 ### PostCSS
 
 Add a `.postcssrc.js`, `postcss.config.js` or create a folder `.config` with a file `postcssrc.js`. You can also use the extension `.cjs` or `.mjs`. Here is an example of configuration:
@@ -157,9 +154,6 @@ export default {
   ]
 }
 ```
-
-> [!NOTE]
-> The `autoprefixer` plugin is used by default if a configuration file is not specified.
 
 ### Theme
 
@@ -195,22 +189,6 @@ Example usage of the `development` variable:
   <!-- debug info only visible in development mode -->
 {{/if}}
 ```
-
-### Browserlist
-
-Add a `.browserslistrc` or add the information in the `package.json` file using the `browserslist` key. Here is an example of configuration:
-
-```json
-{
-  "browserslist": [
-    "last 2 versions",
-    "not dead"
-  ]
-}
-```
-
-More information about the Browserslist configuration, check the [Browserslist repository](https://github.com/browserslist/browserslist).
-
 
 ## Structure
 

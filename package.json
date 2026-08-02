@@ -27,16 +27,16 @@
     "commander": "^15.0.0",
     "glob": "^13.0.6",
     "handlebars": "^4.7.9",
-    "lightningcss": "^1.32.0",
+    "lightningcss": "^1.33.0",
     "lilconfig": "^3.1.3",
-    "postcss": "^8.5.19",
-    "rollup": "^4.62.2",
-    "sass": "^1.101.0",
+    "postcss": "^8.5.25",
+    "rollup": "^4.62.4",
+    "sass": "^1.102.0",
     "terser": "^5.49.0"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^9.1.0",
-    "eslint": "^10.7.0"
+    "@antfu/eslint-config": "^9.2.0",
+    "eslint": "^10.8.0"
   },
   "browserslist": [
     ">= 1%",

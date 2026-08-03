@@ -78,7 +78,7 @@ Configuration file for Hamlet plugins, custom helpers, and build options. You ca
 import testPlugin from '@hamlet/test-plugin'
 
 export default {
-  recompileStyleOnAnyChange: false,
+  recompileOnAnyChange: false,
   helpers: {
     sayHello: name => `Hello, ${name}!`,
   },
@@ -92,7 +92,7 @@ export default {
 
 - **`helpers`** — Object with custom Handlebars helpers. These helpers don't require namespacing and can override built-in helpers if needed. Use for local project helpers only; for distributable helpers, use the `plugins` system with namespacing.
 - **`plugins`** — Array of plugin factory functions. Each plugin should return an object with `partials` and/or `helpers` keys. Namespaced helpers/partials from plugins cannot override built-in or previously registered ones (will be skipped with a warning).
-- **`recompileStyleOnAnyChange`** — Boolean (default: `false`). If `true`, CSS is recompiled whenever any file changes (useful for class-based CSS frameworks like Tailwind that generate styles dynamically).
+- **`recompileOnAnyChange`** — Boolean (default: `false`). If `true`, CSS is recompiled whenever any file changes (useful for class-based CSS frameworks like Tailwind that generate styles dynamically).
 
 #### Using context in configuration
 
@@ -100,7 +100,7 @@ If your configuration needs access to paths or other context information, export
 
 ```js
 export default ({ paths }) => ({
-  recompileStyleOnAnyChange: true,
+  recompileOnAnyChange: true,
   helpers: {
     projectRoot: () => paths.root,
   },
@@ -117,7 +117,27 @@ Available context properties:
 
 #### Plugin development
 
-A plugin must export a default function that returns an object with `partials` and/or `helpers`. If a plugin tries to register a name that already exists (a built-in helper/partial, or one from another plugin), it will be skipped with a console warning instead of overwriting it.
+A plugin must export a default function that returns an object with `namespace` and optionally `partials`, `helpers`, and/or `context`. If a plugin tries to register a name that already exists (a built-in helper/partial, or one from another plugin), it will be skipped with a console warning instead of overwriting it.
+
+The `context` key is an optional plain object with data to expose to all Handlebars templates. Hamlet merges it into the template context under the plugin's namespace key, so there are no collisions with the global context or other plugins:
+
+```js
+export default function myPlugin(options = {}) {
+  return {
+    namespace: 'icons',
+    context: {
+      spriteUrl: options.spriteUrl ?? '/icons.svg',
+    },
+    partials: {},
+  }
+}
+```
+
+In any template, the plugin context is accessible as `{{<namespace>.<key>}}`:
+
+```hbs
+{{icons.spriteUrl}}
+```
 
 > [!IMPORTANT]
 > Plugins execute arbitrary Node.js code. Treat them as you would any other npm dependency—only install plugins from trusted sources.

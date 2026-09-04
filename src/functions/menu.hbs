@@ -24,12 +24,10 @@ Create a menu from a list of links
         <b:class cond='data:class' expr:name='data:class'/>
         <b:attr name='id' expr:value='data:id'/>
         <b:loop index='i' values='data:links' var='link'>
-          {{!-- Check if the current or the next element contains the prefix --}}
           <b:with value='{
             current: (data:link.title contains data:prefix),
             next: (data:links[data:i + 1].title contains data:prefix)
           }' var='state'>
-            {{!-- Check if the menu has started or ended --}}
             <b:with value='{
               start: (data:state.next and !data:state.current),
               end: (!data:state.next and data:state.current)
@@ -37,12 +35,10 @@ Create a menu from a list of links
               <b:eval expr='"&lt;li class=\"nav-item " + (data:menu.start ? "has-subnav " : "") + data:itemClass + "\">"'/>
               <a class='nav-link' expr:href='data:link.href'>
                 <b:class cond='data:linkClass' expr:name='data:linkClass'/>
-                {{!-- If the link is the current page or matches the canonical URL --}}
                 <b:if cond='data:link.isCurrentPage or data:view.url.canonical == data:link.href'>
                   <b:class name='is-here'/>
                   <b:class cond='data:hereClass' expr:name='data:hereClass'/>
                 </b:if>
-                {{!-- If the link is an external link --}}
                 <b:if cond='data:link.href contains "?ref="'>
                   <b:class name='is-external'/>
                   <b:class cond='data:externalClass' expr:name='data:externalClass'/>

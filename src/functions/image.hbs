@@ -30,13 +30,11 @@ Create an image tag with optional attributes and responsive support
         <b:tag name='img'>
           <b:attr name='b:whitespace' value='remove'/>
           <b:class cond='data:class' expr:name='data:class'/>
-          {{!-- Add data attributes for each of the specified attributes if they exist --}}
           <b:loop values='["id","sizes","loading","fetchpriority","crossorigin","decoding","referrerpolicy","alt"]' var='attr'>
             <b:with expr:value='+("data:",data:attr)' var='value'>
               <b:attr expr:name='data:attr' expr:value='data:value'/>
             </b:with>
           </b:loop>
-          {{!-- Check if the image is from a proxy server and append parameters if necessary --}}
           <b:with value='[
             "com/img/a/",
             "com/blogger_img_proxy"
@@ -49,7 +47,6 @@ Create an image tag with optional attributes and responsive support
               </b:with>
             </b:with>
           </b:with>
-          {{!-- If sourceSet is provided, generate the srcset attribute --}}
           <b:if cond='data:sourceSet'>
             <b:attr name='srcset' expr:value='sourceSet(data:image, data:sourceSet, data:ratio)'/>
           </b:if>

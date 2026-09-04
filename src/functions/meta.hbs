@@ -9,10 +9,8 @@ Generates essential metadata, SEO, and Open Graph/Twitter Cards.
 @param {String} [twitterSite] - Twitter/X handle of the website (e.g., @zkreations).
 --}}
 <b:includable id='@meta'>
-  {{!-- Common Meta Tags --}}
   <meta expr:charset='data:blog.encoding'/>
   <meta content='width=device-width,initial-scale=1' name='viewport'/>
-  {{!-- Favicon / Icons --}}
   <b:if cond='data:icon'>
     <b:loop values='data:iconSizes ?: [32,96,180,192]' var='size'>
       <link expr:href='resizeImage(data:icon, data:size, "1:1")' rel='icon' expr:sizes='data:size + "x" + data:size' type='image/png'/>
@@ -20,24 +18,19 @@ Generates essential metadata, SEO, and Open Graph/Twitter Cards.
   <b:else/>
     <link expr:href='data:blog.blogspotFaviconUrl' rel='icon' type='image/x-icon'/>
   </b:if>
-  {{!-- Description (Only if exists to avoid empty meta tags) --}}
   <b:if cond='data:view.description'>
     <meta expr:content='data:view.description.escaped' name='description'/>
     <meta expr:content='data:view.description.escaped' property='og:description'/>
     <meta expr:content='data:view.description.escaped' name='twitter:description'/>
   </b:if>
-  {{!-- Canonical URL & Titles --}}
   <link expr:href='data:view.url.canonical' rel='canonical'/>
   <meta expr:content='data:view.url.canonical' property='og:url'/>
   <meta expr:content='data:view.url.canonical' name='twitter:url'/>
   <meta expr:content='data:view.title.escaped' property='og:title'/>
-  {{!-- Robots --}}
   <meta expr:content='data:view.isHomepage or data:view.isSingleItem
     ? (data:robots ?: "index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1")
     : "noindex,follow"' name='robots'/>
-  {{!-- Open Graph Type --}}
   <meta expr:content='data:view.isSingleItem ? "article" : "website"' property='og:type'/>
-  {{!-- Intelligent Handling of Social Media Images --}}
   <b:with value='data:view.featuredImage ? data:view.featuredImage : (data:defaultImage ? data:defaultImage : false)' var='rawImage'>
     <b:if cond='data:rawImage'>
       <b:if cond='data:rawImage.isResizable'>
@@ -51,7 +44,6 @@ Generates essential metadata, SEO, and Open Graph/Twitter Cards.
       </b:if>
     </b:if>
   </b:with>
-  {{!-- Twitter Card --}}
   <meta expr:content='data:twitterCard ?: "summary_large_image"' name='twitter:card'/>
   <b:if cond='data:twitterSite'>
     <meta expr:content='data:twitterSite' name='twitter:site'/>

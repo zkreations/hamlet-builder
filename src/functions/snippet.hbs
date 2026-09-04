@@ -15,19 +15,16 @@ Creates a clean text snippet of a string with conditional ellipsis support.
     linebreaks: false
   }) : ""' var='cleanString'>
     <b:if cond='data:cleanString != ""'>
-      {{!-- Ensure the limit is a number and set a default if not provided --}}
       <b:with value='(data:limit + 0) == data:limit ? (data:limit * 1) : 70' var='maxLength'>
         <b:tag expr:name='data:tag ?: "p"'>
           <b:class cond='data:class' expr:name='data:class'/>
           <b:attr name='id' expr:value='data:id'/>
-          {{!-- Truncate the clean string to the specified maximum length and append ellipsis if necessary --}}
           <b:with value='data:cleanString snippet {
             length: data:maxLength,
             links: false,
             ellipsis: false,
             linebreaks: false
           }' var='truncatedText'>
-            {{!-- Render the truncated text and conditionally add ellipsis if the original string exceeds the maximum length --}}
             <b:eval expr='data:truncatedText + (
               data:cleanString.size > data:maxLength ? (data:ellipsis ?: "...") : ""
             )'/>

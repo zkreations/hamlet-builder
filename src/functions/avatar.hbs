@@ -23,13 +23,11 @@ Create an avatar image with optional default image
         <b:tag name='img'>
           <b:attr name='b:whitespace' value='remove'/>
           <b:class cond='data:class' expr:name='data:class'/>
-          {{!-- Add data attributes for each of the specified attributes if they exist --}}
           <b:loop values='["id","sizes","loading","fetchpriority","crossorigin","decoding","referrerpolicy","alt"]' var='attr'>
             <b:with expr:value='+("data:",data:attr)' var='value'>
               <b:attr expr:name='data:attr' expr:value='data:value'/>
             </b:with>
           </b:loop>
-          {{!-- Add the src, width, and height attributes --}}
           <b:attr name='src' expr:value='data:image'/>
           <b:attr name='width' expr:value='data:image.width'/>
           <b:attr name='height' expr:value='data:image.height'/>

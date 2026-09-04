@@ -26,13 +26,11 @@ Create a responsive custom picture tag using native Blogger image sizing.
         ? data:src.youtubeMaxResDefaultUrl
         : data:src' var='baseImage'>
         <b:with value='data:sourceSet ?: [700, 400]' var='availableSizes'>
-          {{!-- Check if the image is from a proxy server and append parameters if necessary --}}
           <b:with value='[
             "com/img/a/",
             "com/blogger_img_proxy"
           ] any (server => server in data:baseImage)' var='isProxyImg'>
             <b:with value='data:params and data:isProxyImg ? ("-" + data:params) : ""' var='params'>
-              {{!-- Generate <source> tags for each size in the sourceSet array --}}
               <b:loop index='i' values='data:availableSizes' var='size'>
                 <b:if cond='data:i + 1 != data:availableSizes.length'>
                   <b:with value='resizeImage(data:baseImage, data:size, data:ratio)' var='sourceUrl'>
@@ -40,13 +38,11 @@ Create a responsive custom picture tag using native Blogger image sizing.
                   </b:with>
                 </b:if>
               </b:loop>
-              {{!-- Fallback <img> tag for the last size in the sourceSet array --}}
               <b:with value='data:availableSizes.last ?: 600' var='fallbackSize'>
                 <b:with value='resizeImage(data:baseImage, data:fallbackSize, data:ratio)' var='fallbackUrl'>
                   <b:tag name='img'>
                     <b:attr name='b:whitespace' value='remove'/>
                     <b:class cond='data:imgClass' expr:name='data:imgClass'/>
-                    {{!-- Add data attributes for each of the specified attributes if they exist --}}
                     <b:loop values='["id","sizes","loading","fetchpriority","crossorigin","decoding","referrerpolicy","alt"]' var='attr'>
                       <b:with expr:value='+("data:",data:attr)' var='value'>
                         <b:attr expr:name='data:attr' expr:value='data:value'/>

@@ -1,10 +1,12 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 import { globSync } from 'glob'
 
-const baseDir = path.join(process.cwd(), 'src')
-const outputDir = path.join(process.cwd(), 'lib/data')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const rootDir = path.resolve(__dirname, '..')
+const baseDir = path.join(rootDir, 'src').replaceAll('\\', '/')
+const outputDir = path.join(rootDir, 'lib/data')
 
 const files = globSync(`${baseDir}/**/*.@(xml|hbs|handlebars)`)
 
@@ -15,9 +17,10 @@ files.forEach((file) => {
   const extension = path.extname(file)
   const fileName = path.basename(file, extension)
   const partialName = `hamlet.${fileName}`
-  const folderName = path.dirname(file).split(path.sep).pop()
+  const folderName = path.basename(path.dirname(file))
 
-  partials[partialName] = `${fs.readFileSync(file, 'utf8').trim()}\n`
+  const template = fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n').trim()
+  partials[partialName] = `${template}\n`
 
   if (!folders[folderName]) {
     folders[folderName] = []

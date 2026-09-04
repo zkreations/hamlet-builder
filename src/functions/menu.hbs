@@ -13,12 +13,12 @@ Create a menu from a list of links
 --}}
 <b:includable id='@menu'>
   <b:with value='data:prefix ?: "__"' var='prefix'>
-    <b:if cond='data:links[0].title contains data:prefix'>
+    <b:if cond='!data:links.any'>
+      <b:comment render='true'>The array can't be empty</b:comment>
+    <b:elseif cond='data:links[0].title contains data:prefix'/>
       <b:comment render='true'>The first element can't have the prefix</b:comment>
     <b:elseif cond='data:links any (l => l.title + 0 == l.title)'/>
       <b:comment render='true'>The element can't be a number</b:comment>
-    <b:elseif cond='!data:links.any'/>
-      <b:comment render='true'>The array can't be empty</b:comment>
     <b:else/>
       <ul class='nav'>
         <b:class cond='data:class' expr:name='data:class'/>

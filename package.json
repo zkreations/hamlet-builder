@@ -5,7 +5,30 @@
   "description": "Compiler used by the Hamlet theme for Blogger developers.",
   "author": "zkreations <daniel@zkreations.com> (https://zkreations.com/)",
   "license": "MIT",
-  "keywords": [],
+  "homepage": "https://github.com/zkreations/hamlet-builder#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zkreations/hamlet-builder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zkreations/hamlet-builder/issues"
+  },
+  "keywords": [
+    "blogger",
+    "compiler",
+    "handlebars",
+    "theme",
+    "builder",
+    "blogger-template",
+    "rollup",
+    "postcss",
+    "lightningcss"
+  ],
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "lib/index.js",
   "bin": {
     "hamlet": "bin.js",
     "hamlet-builder": "bin.js"
@@ -18,6 +41,10 @@
     "node": ">=20.0.0"
   },
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "build:partials": "node ./scripts/build-partials.js",
     "prepublishOnly": "npm run build:partials"
   },
@@ -36,7 +63,8 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.3.0",
-    "eslint": "^10.9.1"
+    "eslint": "^10.9.1",
+    "vitest": "^4.1.11"
   },
   "browserslist": [
     ">= 1%",

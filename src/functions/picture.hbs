@@ -42,7 +42,7 @@ Create a responsive custom picture tag using native Blogger image sizing.
               </b:loop>
               {{!-- Fallback <img> tag for the last size in the sourceSet array --}}
               <b:with value='data:availableSizes.last ?: 600' var='fallbackSize'>
-                <b:with value='resizeImage(data:baseImage, data:fallbackSize, data:data:ratio)' var='fallbackUrl'>
+                <b:with value='resizeImage(data:baseImage, data:fallbackSize, data:ratio)' var='fallbackUrl'>
                   <b:tag name='img'>
                     <b:attr name='b:whitespace' value='remove'/>
                     <b:class cond='data:imgClass' expr:name='data:imgClass'/>

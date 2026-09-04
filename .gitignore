@@ -1,6 +1,19 @@
-# Folders & files
+# Dependencies
 node_modules
-package-lock.json
 
-# Files
+# Builds & Outputs
+dist
+coverage
 *.tgz
+
+# OS & Editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*-debug.log*
+
+# folders
+.codegraph

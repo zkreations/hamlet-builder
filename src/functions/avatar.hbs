@@ -29,8 +29,8 @@ Create an avatar image with optional default image
             </b:with>
           </b:loop>
           <b:attr name='src' expr:value='data:image'/>
-          <b:attr name='width' expr:value='data:image.width'/>
-          <b:attr name='height' expr:value='data:image.height'/>
+          <b:attr name='width' expr:value='data:width ?: data:image.width'/>
+          <b:attr name='height' expr:value='data:height ?: data:image.height'/>
         </b:tag>
       </b:with>
     </b:with>

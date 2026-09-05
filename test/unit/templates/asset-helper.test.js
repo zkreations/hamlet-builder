@@ -78,4 +78,24 @@ describe('asset helper', () => {
       spy.mockRestore()
     }
   })
+
+  it('handles missing file gracefully with not found comment', () => {
+    const result = helpers.asset('/non-existent.css')
+    expect(result.toString()).toBe('/* The file "non-existent.css" does not exist */')
+  })
+
+  it('re-throws unexpected errors like EACCES', () => {
+    const error = new Error('Permission denied')
+    error.code = 'EACCES'
+    const spy = vi.spyOn(fs, 'readFileSync').mockImplementation(() => {
+      throw error
+    })
+
+    try {
+      expect(() => helpers.asset('/style.css')).toThrow('Permission denied')
+    }
+    finally {
+      spy.mockRestore()
+    }
+  })
 })

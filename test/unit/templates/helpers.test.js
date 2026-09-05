@@ -74,5 +74,33 @@ describe('handlebars helpers', () => {
       const template = hbs.compile('{{#switch status}}{{#case "active"}}Active{{/case}}{{#default}}Unknown{{/default}}{{/switch}}')
       expect(template({ status: 'other' })).toBe('Unknown')
     })
+
+    it('correctly handles nested switch statements without context corruption', () => {
+      const hbs = Handlebars.create()
+      hbs.registerHelper(helpers)
+      const template = hbs.compile(`
+        {{#switch outer}}
+          {{#case "A"}}
+            [A:{{#switch inner}}{{#case "1"}}one{{/case}}{{#case "2"}}two{{/case}}{{/switch}}]
+          {{/case}}
+          {{#case "B"}}
+            [B:match]
+          {{/case}}
+        {{/switch}}
+      `.trim())
+
+      expect(template({ outer: 'A', inner: '1' }).trim()).toBe('[A:one]')
+      expect(template({ outer: 'A', inner: '2' }).trim()).toBe('[A:two]')
+      expect(template({ outer: 'B', inner: '1' }).trim()).toBe('[B:match]')
+    })
+
+    it('works with frozen context objects', () => {
+      const hbs = Handlebars.create()
+      hbs.registerHelper(helpers)
+      const template = hbs.compile('{{#switch val}}{{#case "x"}}X{{/case}}{{/switch}}')
+      const frozenContext = Object.freeze({ val: 'x' })
+      expect(() => template(frozenContext)).not.toThrow()
+      expect(template(frozenContext)).toBe('X')
+    })
   })
 })

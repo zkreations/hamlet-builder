@@ -54,4 +54,28 @@ describe('cSS compilation pipeline', () => {
     expect(minContent).toContain('.header')
     expect(minContent.length).toBeLessThan(unminContent.length)
   })
+
+  it('throws error in build mode on invalid scss syntax', async () => {
+    fs.writeFileSync(path.join(tmpInput, 'invalid.scss'), '.broken { color: ; }')
+
+    const options = {
+      input: tmpInput,
+      output: tmpOutput,
+      watch: false,
+    }
+
+    await expect(compileStyle(options)).rejects.toThrow()
+  })
+
+  it('suppresses error in watch mode on invalid scss syntax', async () => {
+    fs.writeFileSync(path.join(tmpInput, 'invalid.scss'), '.broken { color: ; }')
+
+    const options = {
+      input: tmpInput,
+      output: tmpOutput,
+      watch: true,
+    }
+
+    await expect(compileStyle(options)).resolves.not.toThrow()
+  })
 })

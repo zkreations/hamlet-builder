@@ -19,5 +19,6 @@ describe('configuration loader', () => {
     expect(configs.hamlet.recompileOnAnyChange).toBe(false)
     expect(configs.hamlet.plugins).toEqual([])
     expect(configs.hamlet.helpers).toEqual({})
+    expect(configs.theme).toEqual({})
   })
 })

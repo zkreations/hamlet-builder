@@ -74,7 +74,6 @@ describe('plugin validators', () => {
   describe('isValidHelper', () => {
     it('returns true only for functions', () => {
       expect(isValidHelper(() => {})).toBe(true)
-      expect(isValidHelper(() => {})).toBe(true)
       expect(isValidHelper('fn')).toBe(false)
       expect(isValidHelper(null)).toBe(false)
     })

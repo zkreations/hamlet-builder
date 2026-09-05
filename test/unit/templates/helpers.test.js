@@ -3,38 +3,40 @@ import { describe, expect, it } from 'vitest'
 import helpers from '../../../lib/templates/helpers.js'
 
 describe('handlebars helpers', () => {
-  describe('logic helpers', () => {
-    it('eq checks strict equality', () => {
-      expect(helpers.eq(5, 5)).toBe(true)
-      expect(helpers.eq('5', 5)).toBe(false)
+  describe('logic helpers in Handlebars templates', () => {
+    it('evaluates eq and ne within conditional subexpressions', () => {
+      const hbs = Handlebars.create()
+      hbs.registerHelper(helpers)
+      const template = hbs.compile('{{#if (eq role "admin")}}ADMIN{{else}}USER{{/if}}')
+      expect(template({ role: 'admin' })).toBe('ADMIN')
+      expect(template({ role: 'guest' })).toBe('USER')
+
+      const neTemplate = hbs.compile('{{#if (ne status "draft")}}PUBLISHED{{/if}}')
+      expect(neTemplate({ status: 'published' })).toBe('PUBLISHED')
+      expect(neTemplate({ status: 'draft' })).toBe('')
     })
 
-    it('ne checks strict inequality', () => {
-      expect(helpers.ne(5, 6)).toBe(true)
-      expect(helpers.ne(5, 5)).toBe(false)
+    it('evaluates and, or, and not within conditional subexpressions', () => {
+      const hbs = Handlebars.create()
+      hbs.registerHelper(helpers)
+      const template = hbs.compile('{{#if (and isReady (not isBlocked))}}READY{{else}}WAIT{{/if}}')
+      expect(template({ isReady: true, isBlocked: false })).toBe('READY')
+      expect(template({ isReady: true, isBlocked: true })).toBe('WAIT')
+
+      const orTemplate = hbs.compile('{{#if (or isVip isStaff)}}ACCESS{{/if}}')
+      expect(orTemplate({ isVip: true, isStaff: false })).toBe('ACCESS')
+      expect(orTemplate({ isVip: false, isStaff: false })).toBe('')
     })
 
-    it('lt and gt compare numbers', () => {
+    it('evaluates comparison helpers lt and gt', () => {
       expect(helpers.lt(2, 5)).toBe(true)
       expect(helpers.lt(5, 2)).toBe(false)
       expect(helpers.gt(5, 2)).toBe(true)
       expect(helpers.gt(2, 5)).toBe(false)
     })
-
-    it('and and or perform boolean operations', () => {
-      expect(helpers.and(true, 1)).toBe(true)
-      expect(helpers.and(true, 0)).toBe(false)
-      expect(helpers.or(false, 'yes')).toBe(true)
-      expect(helpers.or(false, null)).toBe(false)
-    })
-
-    it('not negates value', () => {
-      expect(helpers.not(true)).toBe(false)
-      expect(helpers.not(false)).toBe(true)
-    })
   })
 
-  describe('string and Array helpers', () => {
+  describe('string and array helpers', () => {
     it('concat concatenates strings ignoring the last handlebars options argument', () => {
       const hbsOptions = { name: 'concat', hash: {} }
       expect(helpers.concat('hello', ' ', 'world', hbsOptions)).toBe('hello world')

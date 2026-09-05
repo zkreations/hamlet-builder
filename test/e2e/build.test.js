@@ -1,32 +1,32 @@
 import fs from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { buildMode } from '../../lib/modes/build.js'
+import { createTempDir } from '../helpers/temp.js'
 
 describe('end-to-end buildMode', () => {
-  let tmpInput
-  let tmpOutput
+  let inDir
+  let outDir
 
   beforeEach(() => {
-    tmpInput = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-e2e-in-'))
-    tmpOutput = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-e2e-out-'))
+    inDir = createTempDir('hamlet-e2e-in-')
+    outDir = createTempDir('hamlet-e2e-out-')
   })
 
   afterEach(() => {
-    fs.rmSync(tmpInput, { recursive: true, force: true })
-    fs.rmSync(tmpOutput, { recursive: true, force: true })
+    inDir.cleanup()
+    outDir.cleanup()
   })
 
   it('runs complete build: styles, scripts, and XML template', async () => {
-    fs.writeFileSync(path.join(tmpInput, 'theme.scss'), 'body { margin: 0; }')
-    fs.writeFileSync(path.join(tmpInput, 'theme.bundle.js'), 'console.log("init");')
-    fs.writeFileSync(path.join(tmpInput, '_nav.hbs'), '<nav><b:widget/></nav>')
-    fs.writeFileSync(path.join(tmpInput, 'theme.xml'), '<html><body>{{> nav}}</body></html>')
+    fs.writeFileSync(path.join(inDir.dir, 'theme.scss'), 'body { margin: 0; }')
+    fs.writeFileSync(path.join(inDir.dir, 'theme.bundle.js'), 'console.log("init");')
+    fs.writeFileSync(path.join(inDir.dir, '_nav.hbs'), '<nav><b:widget/></nav>')
+    fs.writeFileSync(path.join(inDir.dir, 'theme.xml'), '<html><body>{{> nav}}</body></html>')
 
     const options = {
-      input: tmpInput,
-      output: tmpOutput,
+      input: inDir.dir,
+      output: outDir.dir,
       mode: 'production',
       minify: true,
       minifyCss: true,
@@ -38,13 +38,13 @@ describe('end-to-end buildMode', () => {
 
     await buildMode(options)
 
-    expect(fs.existsSync(path.join(tmpOutput, 'css', 'theme.css'))).toBe(true)
-    expect(fs.existsSync(path.join(tmpOutput, 'css', 'theme.min.css'))).toBe(true)
-    expect(fs.existsSync(path.join(tmpOutput, 'js', 'theme.js'))).toBe(true)
-    expect(fs.existsSync(path.join(tmpOutput, 'js', 'theme.min.js'))).toBe(true)
-    expect(fs.existsSync(path.join(tmpOutput, 'theme.xml'))).toBe(true)
+    expect(fs.existsSync(path.join(outDir.dir, 'css', 'theme.css'))).toBe(true)
+    expect(fs.existsSync(path.join(outDir.dir, 'css', 'theme.min.css'))).toBe(true)
+    expect(fs.existsSync(path.join(outDir.dir, 'js', 'theme.js'))).toBe(true)
+    expect(fs.existsSync(path.join(outDir.dir, 'js', 'theme.min.js'))).toBe(true)
+    expect(fs.existsSync(path.join(outDir.dir, 'theme.xml'))).toBe(true)
 
-    const xmlOutput = fs.readFileSync(path.join(tmpOutput, 'theme.xml'), 'utf8')
+    const xmlOutput = fs.readFileSync(path.join(outDir.dir, 'theme.xml'), 'utf8')
     expect(xmlOutput).toContain('<nav>')
     expect(xmlOutput).toContain('id=\'HTML1\'')
   })

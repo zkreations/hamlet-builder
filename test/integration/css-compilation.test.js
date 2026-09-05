@@ -1,21 +1,21 @@
 import fs from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { compileStyle } from '../../lib/compilers/css.js'
+import { createTempDir } from '../helpers/temp.js'
 
-describe('cSS compilation pipeline', () => {
-  let tmpInput
-  let tmpOutput
+describe('css compilation pipeline', () => {
+  let inDir
+  let outDir
 
   beforeEach(() => {
-    tmpInput = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-css-in-'))
-    tmpOutput = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-css-out-'))
+    inDir = createTempDir('hamlet-css-in-')
+    outDir = createTempDir('hamlet-css-out-')
   })
 
   afterEach(() => {
-    fs.rmSync(tmpInput, { recursive: true, force: true })
-    fs.rmSync(tmpOutput, { recursive: true, force: true })
+    inDir.cleanup()
+    outDir.cleanup()
   })
 
   it('compiles scss into unminified and minified css', async () => {
@@ -26,22 +26,20 @@ describe('cSS compilation pipeline', () => {
         display: flex;
       }
     `
-    fs.writeFileSync(path.join(tmpInput, 'style.scss'), scssContent)
+    fs.writeFileSync(path.join(inDir.dir, 'style.scss'), scssContent)
 
     const options = {
-      input: tmpInput,
-      output: tmpOutput,
+      input: inDir.dir,
+      output: outDir.dir,
       minify: true,
       minifyCss: true,
-      postcss: {
-        plugins: [],
-      },
+      postcss: { plugins: [] },
     }
 
     await compileStyle(options)
 
-    const unminified = path.join(tmpOutput, 'css', 'style.css')
-    const minified = path.join(tmpOutput, 'css', 'style.min.css')
+    const unminified = path.join(outDir.dir, 'css', 'style.css')
+    const minified = path.join(outDir.dir, 'css', 'style.min.css')
 
     expect(fs.existsSync(unminified)).toBe(true)
     expect(fs.existsSync(minified)).toBe(true)
@@ -55,12 +53,60 @@ describe('cSS compilation pipeline', () => {
     expect(minContent.length).toBeLessThan(unminContent.length)
   })
 
-  it('throws error in build mode on invalid scss syntax', async () => {
-    fs.writeFileSync(path.join(tmpInput, 'invalid.scss'), '.broken { color: ; }')
+  it('compiles plain css files and respects minifyCss false', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'plain.css'), '.plain { margin: 0; }')
 
     const options = {
-      input: tmpInput,
-      output: tmpOutput,
+      input: inDir.dir,
+      output: outDir.dir,
+      minify: true,
+      minifyCss: false,
+      postcss: { plugins: [] },
+    }
+
+    await compileStyle(options)
+
+    const unminified = path.join(outDir.dir, 'css', 'plain.css')
+    const minified = path.join(outDir.dir, 'css', 'plain.min.css')
+
+    expect(fs.existsSync(unminified)).toBe(true)
+    expect(fs.existsSync(minified)).toBe(false)
+    expect(fs.readFileSync(unminified, 'utf8')).toContain('.plain')
+  })
+
+  it('ignores partial style files starting with underscore', async () => {
+    fs.writeFileSync(path.join(inDir.dir, '_variables.scss'), '$bg: #000;')
+    fs.writeFileSync(path.join(inDir.dir, 'main.scss'), '@use "variables" as v; body { background: v.$bg; }')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      minify: false,
+      minifyCss: false,
+    }
+
+    await compileStyle(options)
+
+    expect(fs.existsSync(path.join(outDir.dir, 'css', '_variables.css'))).toBe(false)
+    expect(fs.existsSync(path.join(outDir.dir, 'css', 'main.css'))).toBe(true)
+  })
+
+  it('returns early when input contains no style files', async () => {
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+    }
+
+    await expect(compileStyle(options)).resolves.not.toThrow()
+    expect(fs.existsSync(path.join(outDir.dir, 'css'))).toBe(false)
+  })
+
+  it('throws error in build mode on invalid scss syntax', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'invalid.scss'), '.broken { color: ; }')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
       watch: false,
     }
 
@@ -68,11 +114,11 @@ describe('cSS compilation pipeline', () => {
   })
 
   it('suppresses error in watch mode on invalid scss syntax', async () => {
-    fs.writeFileSync(path.join(tmpInput, 'invalid.scss'), '.broken { color: ; }')
+    fs.writeFileSync(path.join(inDir.dir, 'invalid.scss'), '.broken { color: ; }')
 
     const options = {
-      input: tmpInput,
-      output: tmpOutput,
+      input: inDir.dir,
+      output: outDir.dir,
       watch: true,
     }
 

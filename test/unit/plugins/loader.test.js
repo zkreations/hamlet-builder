@@ -58,4 +58,34 @@ describe('plugin loader', () => {
     const result = await loadPlugins(plugins)
     expect(result.partials['duplicateNs.a']).toBe('first\n')
   })
+
+  it('handles failing plugin promises gracefully without breaking remaining plugins', async () => {
+    const failingPlugin = Promise.reject(new Error('Network load error'))
+    const goodPlugin = {
+      namespace: 'good',
+      partials: { item: '<div>item</div>' },
+    }
+
+    const result = await loadPlugins([failingPlugin, goodPlugin])
+    expect(result.partials['good.item']).toBe('<div>item</div>\n')
+  })
+
+  it('skips invalid plugin shapes and reserved helper name collisions', async () => {
+    const invalidShapePlugin = 'not-a-plugin-object'
+    const collidingPlugin = {
+      namespace: 'core',
+      helpers: {
+        existingHelper: () => 'override',
+      },
+    }
+
+    const existing = {
+      helpers: {
+        coreExistingHelper: () => 'original',
+      },
+    }
+
+    const result = await loadPlugins([invalidShapePlugin, collidingPlugin], existing)
+    expect(result.helpers.coreExistingHelper).toBeUndefined()
+  })
 })

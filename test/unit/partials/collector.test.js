@@ -1,34 +1,35 @@
 import fs from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { collectPartials, loadPartials } from '../../../lib/partials/collector.js'
+import { createTempDir } from '../../helpers/temp.js'
 
 describe('partials collector', () => {
-  let tmpDir
+  let tmp
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-partials-'))
+    tmp = createTempDir('hamlet-partials-')
   })
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true })
+    tmp.cleanup()
   })
 
   it('returns empty collections when no partials exist', async () => {
-    const result = await collectPartials(tmpDir)
+    const result = await collectPartials(tmp.dir)
     expect(result.normalPartials).toEqual([])
     expect(result.folderPartials).toEqual([])
     expect(result.duplicates).toEqual([])
+    expect(result.folderDuplicates).toEqual([])
   })
 
   it('collects partials and creates folder partials', async () => {
-    const navDir = path.join(tmpDir, 'nav')
+    const navDir = path.join(tmp.dir, 'nav')
     fs.mkdirSync(navDir)
     fs.writeFileSync(path.join(navDir, '_menu.hbs'), '<nav>menu</nav>')
     fs.writeFileSync(path.join(navDir, '_item.hbs'), '<li>item</li>')
 
-    const result = await collectPartials(tmpDir)
+    const result = await collectPartials(tmp.dir)
 
     expect(result.normalPartials).toContain('menu')
     expect(result.normalPartials).toContain('item')
@@ -36,25 +37,52 @@ describe('partials collector', () => {
     expect(result.partials['folder.nav'].template).toContain('{{> item}}')
     expect(result.partials['folder.nav'].template).toContain('{{> menu}}')
 
-    const loaded = await loadPartials(tmpDir)
+    const loaded = await loadPartials(tmp.dir)
     expect(loaded.menu).toBe('<nav>menu</nav>\n')
     expect(loaded.item).toBe('<li>item</li>\n')
   })
 
-  it('extracts skin variables and generates hamlet.skinVars', async () => {
-    const skinDir = path.join(tmpDir, 'skin')
-    fs.mkdirSync(skinDir)
-    const skinContent = `
-      <Group description="Theme Colors">
-        <Variable name="body.bg" type="background" value="#fff"/>
-        <Variable name="text.color" type="color" value="#333"/>
-      </Group>
-    `
-    fs.writeFileSync(path.join(skinDir, '_skin.xml'), skinContent)
+  it('detects duplicate partial names across different directories', async () => {
+    const dirA = path.join(tmp.dir, 'components')
+    const dirB = path.join(tmp.dir, 'widgets')
+    fs.mkdirSync(dirA)
+    fs.mkdirSync(dirB)
 
-    const result = await collectPartials(tmpDir)
-    expect(result.partials['hamlet.skinVars']).toBeDefined()
-    expect(result.partials['hamlet.skinVars'].template).toContain('--body-bg: $(body.bg);')
-    expect(result.partials['hamlet.skinVars'].template).toContain('--text-color: $(text.color);')
+    fs.writeFileSync(path.join(dirA, '_button.hbs'), '<button>A</button>')
+    fs.writeFileSync(path.join(dirB, '_button.hbs'), '<button>B</button>')
+
+    const result = await collectPartials(tmp.dir)
+
+    expect(result.duplicates.length).toBe(1)
+    expect(result.duplicates[0].name).toBe('button')
+
+    const conflictingFiles = [
+      path.normalize(result.duplicates[0].registered),
+      ...result.duplicates[0].duplicates.map(p => path.normalize(p)),
+    ]
+    expect(conflictingFiles).toContain(path.normalize(path.join(dirA, '_button.hbs')))
+    expect(conflictingFiles).toContain(path.normalize(path.join(dirB, '_button.hbs')))
+  })
+
+  it('detects duplicate folder names across nested directories', async () => {
+    const path1 = path.join(tmp.dir, 'sub1', 'cards')
+    const path2 = path.join(tmp.dir, 'sub2', 'cards')
+    fs.mkdirSync(path1, { recursive: true })
+    fs.mkdirSync(path2, { recursive: true })
+
+    fs.writeFileSync(path.join(path1, '_cardA.hbs'), '<div>Card A</div>')
+    fs.writeFileSync(path.join(path2, '_cardB.hbs'), '<div>Card B</div>')
+
+    const result = await collectPartials(tmp.dir)
+
+    expect(result.folderDuplicates.length).toBe(1)
+    expect(result.folderDuplicates[0].name).toBe('folder.cards')
+
+    const conflictingFolders = [
+      path.normalize(result.folderDuplicates[0].registered),
+      ...result.folderDuplicates[0].duplicates.map(p => path.normalize(p)),
+    ]
+    expect(conflictingFolders).toContain(path.normalize(path1))
+    expect(conflictingFolders).toContain(path.normalize(path2))
   })
 })

@@ -55,6 +55,13 @@ describe('blogger parser', () => {
       expect(output).toContain('id=\'HTML1\'')
       expect(output).toContain('id=\'HTML2\'')
     })
+
+    it('falls back to HTML type when invalid widget type is supplied', () => {
+      const input = '<html><body><b:widget type="NonExistentWidget"/></body></html>'
+      const output = processTemplate(input)
+      expect(output).toContain('type=\'HTML\'')
+      expect(output).toContain('id=\'HTML1\'')
+    })
   })
 
   describe('variableAttributes', () => {
@@ -64,6 +71,14 @@ describe('blogger parser', () => {
       expect(output).toContain('name="themeColor"')
       expect(output).toContain('description="themeColor"')
       expect(output).toContain('type="string"')
+    })
+
+    it('injects default attribute for non-string variable types', () => {
+      const input = '<html><Variable name="mainBg" type="background" value="#ffffff"/></html>'
+      const output = processTemplate(input)
+      expect(output).toContain('name="mainBg"')
+      expect(output).toContain('type="background"')
+      expect(output).toContain('default="#ffffff"')
     })
 
     it('throws error if Variable element lacks name attribute', () => {

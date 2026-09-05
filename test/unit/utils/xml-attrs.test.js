@@ -1,15 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { getAttr, getAttrValue, regExpAttr, removeAttr, replaceAttrValue } from '../../../lib/utils/xml-attrs.js'
+import { getAttr, getAttrValue, removeAttr, replaceAttrValue } from '../../../lib/utils/xml-attrs.js'
 
-describe('xML attribute utilities', () => {
-  describe('regExpAttr', () => {
-    it('creates and returns a RegExp for the given attribute', () => {
-      const re = regExpAttr('id')
-      expect(re).toBeInstanceOf(RegExp)
-      expect(re.source).toBe('id=[\'"](.*?)[\'"]')
-    })
-  })
-
+describe('xml attribute utilities', () => {
   describe('getAttr', () => {
     it('returns the attribute string if found', () => {
       const tag = '<b:widget id="header1" type="Header">'

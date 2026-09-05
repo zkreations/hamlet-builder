@@ -1,31 +1,31 @@
 import fs from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { build } from '../../lib/builder.js'
+import { createTempDir } from '../helpers/temp.js'
 
 describe('builder orchestrator', () => {
-  let tmpInput
-  let tmpOutput
+  let inDir
+  let outDir
 
   beforeEach(() => {
-    tmpInput = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-builder-in-'))
-    tmpOutput = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-builder-out-'))
+    inDir = createTempDir('hamlet-builder-in-')
+    outDir = createTempDir('hamlet-builder-out-')
   })
 
   afterEach(() => {
-    fs.rmSync(tmpInput, { recursive: true, force: true })
-    fs.rmSync(tmpOutput, { recursive: true, force: true })
+    inDir.cleanup()
+    outDir.cleanup()
   })
 
   it('orchestrates compilation of styles, scripts, and XML', async () => {
-    fs.writeFileSync(path.join(tmpInput, 'main.scss'), 'a { text-decoration: none; }')
-    fs.writeFileSync(path.join(tmpInput, 'index.bundle.js'), 'console.log("builder test");')
-    fs.writeFileSync(path.join(tmpInput, 'index.xml'), '<html><body>Hello</body></html>')
+    fs.writeFileSync(path.join(inDir.dir, 'main.scss'), 'a { text-decoration: none; }')
+    fs.writeFileSync(path.join(inDir.dir, 'index.bundle.js'), 'console.log("builder test");')
+    fs.writeFileSync(path.join(inDir.dir, 'index.xml'), '<html><body>Hello</body></html>')
 
     const options = {
-      input: tmpInput,
-      output: tmpOutput,
+      input: inDir.dir,
+      output: outDir.dir,
       mode: 'production',
       minify: false,
       minifyCss: false,
@@ -37,8 +37,20 @@ describe('builder orchestrator', () => {
 
     await build(options)
 
-    expect(fs.existsSync(path.join(tmpOutput, 'css', 'main.css'))).toBe(true)
-    expect(fs.existsSync(path.join(tmpOutput, 'js', 'index.js'))).toBe(true)
-    expect(fs.existsSync(path.join(tmpOutput, 'index.xml'))).toBe(true)
+    expect(fs.existsSync(path.join(outDir.dir, 'css', 'main.css'))).toBe(true)
+    expect(fs.existsSync(path.join(outDir.dir, 'js', 'index.js'))).toBe(true)
+    expect(fs.existsSync(path.join(outDir.dir, 'index.xml'))).toBe(true)
+  })
+
+  it('fails build when a compiler fails in non-watch mode', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'broken.scss'), '.broken { color: ; }')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      watch: false,
+    }
+
+    await expect(build(options)).rejects.toThrow()
   })
 })

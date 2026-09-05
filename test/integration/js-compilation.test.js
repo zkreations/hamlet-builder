@@ -1,21 +1,21 @@
 import fs from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { compileJS } from '../../lib/compilers/js.js'
+import { createTempDir } from '../helpers/temp.js'
 
-describe('jS compilation pipeline', () => {
-  let tmpInput
-  let tmpOutput
+describe('js compilation pipeline', () => {
+  let inDir
+  let outDir
 
   beforeEach(() => {
-    tmpInput = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-js-in-'))
-    tmpOutput = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-js-out-'))
+    inDir = createTempDir('hamlet-js-in-')
+    outDir = createTempDir('hamlet-js-out-')
   })
 
   afterEach(() => {
-    fs.rmSync(tmpInput, { recursive: true, force: true })
-    fs.rmSync(tmpOutput, { recursive: true, force: true })
+    inDir.cleanup()
+    outDir.cleanup()
   })
 
   it('bundles entry file into IIFE unminified and minified js', async () => {
@@ -25,22 +25,20 @@ describe('jS compilation pipeline', () => {
         return message;
       }
     `
-    fs.writeFileSync(path.join(tmpInput, 'app.bundle.js'), jsContent)
+    fs.writeFileSync(path.join(inDir.dir, 'app.bundle.js'), jsContent)
 
     const options = {
-      input: tmpInput,
-      output: tmpOutput,
+      input: inDir.dir,
+      output: outDir.dir,
       minify: true,
       minifyJs: true,
-      rollup: {
-        plugins: [],
-      },
+      rollup: { plugins: [] },
     }
 
     await compileJS(options)
 
-    const unminified = path.join(tmpOutput, 'js', 'app.js')
-    const minified = path.join(tmpOutput, 'js', 'app.min.js')
+    const unminified = path.join(outDir.dir, 'js', 'app.js')
+    const minified = path.join(outDir.dir, 'js', 'app.min.js')
 
     expect(fs.existsSync(unminified)).toBe(true)
     expect(fs.existsSync(minified)).toBe(true)
@@ -50,5 +48,72 @@ describe('jS compilation pipeline', () => {
 
     const minContent = fs.readFileSync(minified, 'utf8')
     expect(minContent.length).toBeLessThan(unminContent.length)
+  })
+
+  it('ignores files that do not match the *.bundle.@(js|mjs|cjs) pattern', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'helper.js'), 'export const x = 1;')
+    fs.writeFileSync(path.join(inDir.dir, 'main.bundle.js'), 'import { x } from "./helper.js"; console.log(x);')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      minify: false,
+      minifyJs: false,
+    }
+
+    await compileJS(options)
+
+    expect(fs.existsSync(path.join(outDir.dir, 'js', 'helper.js'))).toBe(false)
+    expect(fs.existsSync(path.join(outDir.dir, 'js', 'main.js'))).toBe(true)
+  })
+
+  it('respects minifyJs false and produces only unminified bundle', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'script.bundle.js'), 'console.log("unminified only");')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      minify: true,
+      minifyJs: false,
+    }
+
+    await compileJS(options)
+
+    expect(fs.existsSync(path.join(outDir.dir, 'js', 'script.js'))).toBe(true)
+    expect(fs.existsSync(path.join(outDir.dir, 'js', 'script.min.js'))).toBe(false)
+  })
+
+  it('returns early when input contains no bundle files', async () => {
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+    }
+
+    await expect(compileJS(options)).resolves.not.toThrow()
+    expect(fs.existsSync(path.join(outDir.dir, 'js'))).toBe(false)
+  })
+
+  it('throws error in build mode on invalid JS syntax', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'broken.bundle.js'), 'const broken = ;')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      watch: false,
+    }
+
+    await expect(compileJS(options)).rejects.toThrow()
+  })
+
+  it('suppresses error in watch mode on invalid JS syntax', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'broken.bundle.js'), 'const broken = ;')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      watch: true,
+    }
+
+    await expect(compileJS(options)).resolves.not.toThrow()
   })
 })

@@ -98,4 +98,89 @@ describe('asset helper', () => {
       spy.mockRestore()
     }
   })
+
+  describe('assetCss and assetJs helpers', () => {
+    let outDir
+
+    beforeEach(() => {
+      outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-out-'))
+      fs.mkdirSync(path.join(outDir, 'css'), { recursive: true })
+      fs.mkdirSync(path.join(outDir, 'js'), { recursive: true })
+    })
+
+    afterEach(() => {
+      fs.rmSync(outDir, { recursive: true, force: true })
+    })
+
+    it('loads unminified css in development mode', () => {
+      fs.writeFileSync(path.join(outDir, 'css', 'main.css'), 'body { dev: true; }')
+      fs.writeFileSync(path.join(outDir, 'css', 'main.min.css'), 'body{dev:false}')
+
+      const devHelpers = createHelpers({
+        basePath: tmpDir,
+        outputPath: outDir,
+        isDevelopment: true,
+      })
+
+      const res = devHelpers.assetCss('main')
+      expect(res.toString()).toBe('body { dev: true; }')
+
+      const resWithExt = devHelpers.assetCss('main.css')
+      expect(resWithExt.toString()).toBe('body { dev: true; }')
+    })
+
+    it('loads minified css in production mode', () => {
+      fs.writeFileSync(path.join(outDir, 'css', 'main.css'), 'body { dev: true; }')
+      fs.writeFileSync(path.join(outDir, 'css', 'main.min.css'), 'body{dev:false}')
+
+      const prodHelpers = createHelpers({
+        basePath: tmpDir,
+        outputPath: outDir,
+        isDevelopment: false,
+      })
+
+      const res = prodHelpers.assetCss('main')
+      expect(res.toString()).toBe('body{dev:false}')
+    })
+
+    it('loads unminified js in development mode', () => {
+      fs.writeFileSync(path.join(outDir, 'js', 'bundle.js'), 'console.log("dev");')
+      fs.writeFileSync(path.join(outDir, 'js', 'bundle.min.js'), 'console.log("prod")')
+
+      const devHelpers = createHelpers({
+        basePath: tmpDir,
+        outputPath: outDir,
+        isDevelopment: true,
+      })
+
+      const res = devHelpers.assetJs('bundle')
+      expect(res.toString()).toBe('console.log("dev");')
+
+      const resWithExt = devHelpers.assetJs('bundle.js')
+      expect(resWithExt.toString()).toBe('console.log("dev");')
+    })
+
+    it('loads minified js in production mode', () => {
+      fs.writeFileSync(path.join(outDir, 'js', 'bundle.js'), 'console.log("dev");')
+      fs.writeFileSync(path.join(outDir, 'js', 'bundle.min.js'), 'console.log("prod")')
+
+      const prodHelpers = createHelpers({
+        basePath: tmpDir,
+        outputPath: outDir,
+        isDevelopment: false,
+      })
+
+      const res = prodHelpers.assetJs('bundle')
+      expect(res.toString()).toBe('console.log("prod")')
+    })
+
+    it('warns and returns fallback comment when output path is missing', () => {
+      const emptyHelpers = createHelpers({ basePath: tmpDir })
+      const resCss = emptyHelpers.assetCss('main')
+      expect(resCss.toString()).toContain('Output path not configured')
+
+      const resJs = emptyHelpers.assetJs('main')
+      expect(resJs.toString()).toContain('Output path not configured')
+    })
+  })
 })

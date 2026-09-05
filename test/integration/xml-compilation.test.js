@@ -132,4 +132,36 @@ describe('xml compilation pipeline', () => {
 
     await expect(compileXML(options)).resolves.not.toThrow()
   })
+
+  it('embeds compiled CSS and JS using assetCss and assetJs helpers', async () => {
+    fs.mkdirSync(path.join(outDir.dir, 'css'), { recursive: true })
+    fs.mkdirSync(path.join(outDir.dir, 'js'), { recursive: true })
+
+    fs.writeFileSync(path.join(outDir.dir, 'css', 'style.min.css'), 'body{margin:0}')
+    fs.writeFileSync(path.join(outDir.dir, 'js', 'app.min.js'), 'console.log("hamlet")')
+
+    const mainXml = `
+      <html>
+        <head>
+          <style>{{assetCss "style"}}</style>
+          <script>{{assetJs "app"}}</script>
+        </head>
+        <body></body>
+      </html>
+    `
+    fs.writeFileSync(path.join(inDir.dir, 'theme.xml'), mainXml)
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'production',
+      hamlet: { helpers: {}, plugins: [] },
+    }
+
+    await compileXML(options)
+
+    const result = fs.readFileSync(path.join(outDir.dir, 'theme.xml'), 'utf8')
+    expect(result).toContain('<style>body{margin:0}</style>')
+    expect(result).toContain('<script>console.log("hamlet")</script>')
+  })
 })

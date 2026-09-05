@@ -2,6 +2,7 @@
   "name": "hamlet-builder",
   "type": "module",
   "version": "1.8.0",
+  "packageManager": "pnpm@11.24.0",
   "description": "Compiler used by the Hamlet theme for Blogger developers.",
   "author": "zkreations <daniel@zkreations.com> (https://zkreations.com/)",
   "license": "MIT",

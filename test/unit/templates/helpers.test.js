@@ -1,6 +1,8 @@
 import Handlebars from 'handlebars'
 import { describe, expect, it } from 'vitest'
-import helpers from '../../../lib/templates/helpers.js'
+import { createHelpers } from '../../../lib/templates/helpers.js'
+
+const helpers = createHelpers()
 
 describe('handlebars helpers', () => {
   describe('logic helpers in Handlebars templates', () => {

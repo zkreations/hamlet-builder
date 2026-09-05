@@ -39,7 +39,7 @@
     "lib"
   ],
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "lint": "eslint .",
@@ -51,7 +51,6 @@
     "prepublishOnly": "npm run build:partials"
   },
   "dependencies": {
-    "chalk": "^5.6.2",
     "chokidar": "^5.0.0",
     "commander": "^15.0.0",
     "glob": "^13.0.6",

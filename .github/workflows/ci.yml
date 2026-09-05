@@ -2,24 +2,47 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - '**.md'
+      - LICENSE
+      - .gitignore
+
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - '**.md'
+      - LICENSE
+      - .gitignore
 
 permissions:
   contents: read
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    name: Validate (${{ matrix.os }}, Node ${{ matrix.node-version }})
+    runs-on: ${{ matrix.os }}
+
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [20, 22]
+        include:
+          - os: ubuntu-latest
+            node-version: 22.x
+          - os: ubuntu-latest
+            node-version: 24.x
+          - os: windows-latest
+            node-version: 24.x
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install pnpm
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
       - name: Setup Node.js ${{ matrix.node-version }}
@@ -31,14 +54,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
+      - name: Run linter
+        run: pnpm run lint
 
       - name: Run tests
-        run: pnpm test
+        run: pnpm run test
 
       - name: Build partials
-        run: pnpm build:partials
+        run: pnpm run build:partials
 
-      - name: Verify package tarball (dry-run)
+      - name: Verify package tarball
         run: pnpm pack --dry-run

@@ -45,6 +45,7 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "build:partials": "node ./scripts/build-partials.js",
     "prepublishOnly": "npm run build:partials"
   },
@@ -63,6 +64,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.3.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.9.1",
     "vitest": "^4.1.11"
   },

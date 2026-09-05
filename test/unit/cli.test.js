@@ -60,4 +60,3 @@ describe('cli command line interface', () => {
     expect(cli.version()).toBe(pkgJson.version)
   })
 })
-

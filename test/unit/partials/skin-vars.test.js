@@ -66,4 +66,3 @@ describe('skin variables generator', () => {
     })
   })
 })
-

@@ -17,4 +17,3 @@ export function createTempDir(prefix = 'hamlet-test-') {
     },
   }
 }
-

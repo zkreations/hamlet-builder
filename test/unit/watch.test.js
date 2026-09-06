@@ -1,5 +1,5 @@
 import chokidar from 'chokidar'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { watchMode } from '../../lib/modes/watch.js'
 
 vi.mock('chokidar', () => ({
@@ -12,6 +12,9 @@ vi.mock('chokidar', () => ({
 }))
 
 describe('watchMode configuration', () => {
+  beforeEach(() => vi.spyOn(console, 'warn').mockImplementation(() => {}))
+  afterEach(() => vi.restoreAllMocks())
+
   it('configures chokidar and ignores output directory to prevent infinite loops', () => {
     const options = {
       input: './src',

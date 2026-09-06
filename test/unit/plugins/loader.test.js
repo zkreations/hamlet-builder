@@ -1,7 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { loadPlugins } from '../../../lib/plugins/loader.js'
 
 describe('plugin loader', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => vi.restoreAllMocks())
+
   it('loads valid plugins, prefixes partials and helpers with namespace', async () => {
     const mockPlugin = {
       namespace: 'custom',

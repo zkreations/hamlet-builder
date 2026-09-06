@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { build } from '../../lib/builder.js'
 import { createTempDir } from '../helpers/temp.js'
 
@@ -11,11 +11,14 @@ describe('builder orchestrator', () => {
   beforeEach(() => {
     inDir = createTempDir('hamlet-builder-in-')
     outDir = createTempDir('hamlet-builder-out-')
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   afterEach(() => {
     inDir.cleanup()
     outDir.cleanup()
+    vi.restoreAllMocks()
   })
 
   it('orchestrates compilation of styles, scripts, and XML', async () => {

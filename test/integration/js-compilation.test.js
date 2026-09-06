@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { compileJS } from '../../lib/compilers/js.js'
 import { createTempDir } from '../helpers/temp.js'
 
@@ -11,11 +11,14 @@ describe('js compilation pipeline', () => {
   beforeEach(() => {
     inDir = createTempDir('hamlet-js-in-')
     outDir = createTempDir('hamlet-js-out-')
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   afterEach(() => {
     inDir.cleanup()
     outDir.cleanup()
+    vi.restoreAllMocks()
   })
 
   it('bundles entry file into IIFE unminified and minified js', async () => {

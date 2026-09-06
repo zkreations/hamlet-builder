@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildMode } from '../../lib/modes/build.js'
 import { createTempDir } from '../helpers/temp.js'
 
@@ -11,11 +11,14 @@ describe('end-to-end buildMode', () => {
   beforeEach(() => {
     inDir = createTempDir('hamlet-e2e-in-')
     outDir = createTempDir('hamlet-e2e-out-')
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   afterEach(() => {
     inDir.cleanup()
     outDir.cleanup()
+    vi.restoreAllMocks()
   })
 
   it('runs complete build: styles, scripts, and XML template', async () => {

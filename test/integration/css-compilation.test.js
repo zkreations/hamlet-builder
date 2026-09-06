@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { compileStyle } from '../../lib/compilers/css.js'
 import { createTempDir } from '../helpers/temp.js'
 
@@ -11,11 +11,14 @@ describe('css compilation pipeline', () => {
   beforeEach(() => {
     inDir = createTempDir('hamlet-css-in-')
     outDir = createTempDir('hamlet-css-out-')
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   afterEach(() => {
     inDir.cleanup()
     outDir.cleanup()
+    vi.restoreAllMocks()
   })
 
   it('compiles scss into unminified and minified css', async () => {

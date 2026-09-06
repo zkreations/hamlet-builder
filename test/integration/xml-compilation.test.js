@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { compileXML } from '../../lib/compilers/xml.js'
 import { createTempDir } from '../helpers/temp.js'
 
@@ -11,11 +11,14 @@ describe('xml compilation pipeline', () => {
   beforeEach(() => {
     inDir = createTempDir('hamlet-xml-in-')
     outDir = createTempDir('hamlet-xml-out-')
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   afterEach(() => {
     inDir.cleanup()
     outDir.cleanup()
+    vi.restoreAllMocks()
   })
 
   it('compiles an XML template with partials, helpers and Blogger parser', async () => {

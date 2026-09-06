@@ -11,11 +11,14 @@ describe('asset helper', () => {
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-asset-'))
     helpers = createHelpers({ basePath: tmpDir })
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true })
+    vi.restoreAllMocks()
   })
+
 
   it('reads a valid asset inside basePath', () => {
     const cssPath = path.join(tmpDir, 'style.css')

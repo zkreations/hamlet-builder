@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { processTemplate } from '../../../lib/templates/blogger-parser.js'
 
 describe('blogger parser', () => {
@@ -57,10 +57,12 @@ describe('blogger parser', () => {
     })
 
     it('falls back to HTML type when invalid widget type is supplied', () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
       const input = '<html><body><b:widget type="NonExistentWidget"/></body></html>'
       const output = processTemplate(input)
       expect(output).toContain('type=\'HTML\'')
       expect(output).toContain('id=\'HTML1\'')
+      vi.restoreAllMocks()
     })
   })
 

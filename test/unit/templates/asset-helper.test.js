@@ -19,7 +19,6 @@ describe('asset helper', () => {
     vi.restoreAllMocks()
   })
 
-
   it('reads a valid asset inside basePath', () => {
     const cssPath = path.join(tmpDir, 'style.css')
     fs.writeFileSync(cssPath, '.test { color: red; }')

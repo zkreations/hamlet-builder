@@ -10,14 +10,15 @@ describe('time utilities', () => {
   })
 
   describe('measureTime', () => {
-    it('formats elapsed time into seconds and milliseconds', () => {
+    it('formats elapsed time into seconds when >= 1000ms', () => {
       const start = 1000
       const end = 2500
-      expect(measureTime(end, start)).toBe('1.50s (1500ms)')
+      expect(measureTime(end, start)).toBe('1.50s')
     })
 
-    it('handles zero or sub-second duration', () => {
-      expect(measureTime(1050, 1000)).toBe('0.05s (50ms)')
+    it('formats elapsed time into milliseconds when < 1000ms', () => {
+      expect(measureTime(1050, 1000)).toBe('50ms')
+      expect(measureTime(1000, 1000)).toBe('0ms')
     })
   })
 })

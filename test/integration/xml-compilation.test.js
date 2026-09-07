@@ -167,4 +167,51 @@ describe('xml compilation pipeline', () => {
     expect(result).toContain('<style>body{margin:0}</style>')
     expect(result).toContain('<script>console.log("hamlet")</script>')
   })
+
+  it('normalizes multiline expr:* attributes and Blogger control expressions into canonical single lines', async () => {
+    const mainXml = `
+      <html>
+        <head>
+          <title>Expr Test</title>
+        </head>
+        <body>
+          <div expr:class='
+            data:view.isHomepage
+              ? "home-view"
+              : "inner-view"
+          '>
+            <b:if cond='
+              data:view.isPost
+                and not data:blog.isMobile
+            '>
+              <a
+                class='button'
+                expr:href='
+                  data:post.url
+                '
+              >
+                Read
+              </a>
+            </b:if>
+          </div>
+        </body>
+      </html>
+    `
+    fs.writeFileSync(path.join(inDir.dir, 'expr.xml'), mainXml)
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'production',
+      hamlet: { helpers: {}, plugins: [] },
+    }
+
+    await compileXML(options)
+
+    const result = fs.readFileSync(path.join(outDir.dir, 'expr.xml'), 'utf8')
+    expect(result).toContain('expr:class=\'data:view.isHomepage ? "home-view" : "inner-view"\'')
+    expect(result).toContain('cond=\'data:view.isPost and not data:blog.isMobile\'')
+    expect(result).toContain('expr:href=\'data:post.url\'')
+    expect(result).toContain('class=\'button\'')
+  })
 })

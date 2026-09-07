@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { processTemplate } from '../../../lib/templates/blogger-parser.js'
+import { normalizeBloggerExpressions, processTemplate } from '../../../lib/templates/blogger-parser.js'
 
 describe('blogger parser', () => {
   describe('rootAttributes', () => {
@@ -86,6 +86,117 @@ describe('blogger parser', () => {
     it('throws error if Variable element lacks name attribute', () => {
       const input = '<html><Variable value="#ff0000"/></html>'
       expect(() => processTemplate(input)).toThrow('The name attribute is required for the Variable element.')
+    })
+  })
+
+  describe('normalizeBloggerExpressions', () => {
+    it('normalizes multiline expr:* attributes on HTML elements into single line', () => {
+      const input = `<div expr:class='
+        data:view.isHomepage
+          ? "home"
+          : data:view.isPost
+            ? "single"
+            : "other"
+      '></div>`
+      const output = normalizeBloggerExpressions(input)
+      expect(output).toBe('<div expr:class=\'data:view.isHomepage ? "home" : data:view.isPost ? "single" : "other"\'></div>')
+    })
+
+    it('normalizes multiline expr:* attributes with double quotes and mixed internal quotes', () => {
+      const input = `<span expr:title="
+        data:post.hasTitle
+          ? 'Post: ' + data:post.title
+          : 'No title'
+      "></span>`
+      const output = normalizeBloggerExpressions(input)
+      expect(output).toBe('<span expr:title="data:post.hasTitle ? \'Post: \' + data:post.title : \'No title\'"></span>')
+    })
+
+    it('normalizes multiline cond attribute on b:if and b:elseif tags', () => {
+      const input = `<b:if cond='
+        data:view.isPost
+          and (data:post.hasTitle or data:blog.pageType == "index")
+      '><h1>Title</h1></b:if>`
+      const output = normalizeBloggerExpressions(input)
+      expect(output).toBe('<b:if cond=\'data:view.isPost and (data:post.hasTitle or data:blog.pageType == "index")\'><h1>Title</h1></b:if>')
+    })
+
+    it('normalizes multiline values attribute with lambda filters on b:loop', () => {
+      const input = `<b:loop values='
+        data:posts
+          filter (p => p.hasTitle and not p.isDraft)
+      ' var='post'></b:loop>`
+      const output = normalizeBloggerExpressions(input)
+      expect(output).toBe('<b:loop values=\'data:posts filter (p => p.hasTitle and not p.isDraft)\' var=\'post\'></b:loop>')
+    })
+
+    it('normalizes multiline expr attribute on b:eval', () => {
+      const input = `<b:eval expr='
+        data:post.allowComments
+          ? data:post.commentCount
+          : "Disabled"
+      '/>`
+      const output = normalizeBloggerExpressions(input)
+      expect(output).toBe('<b:eval expr=\'data:post.allowComments ? data:post.commentCount : "Disabled"\'/>')
+    })
+
+    it('normalizes multiline value attribute on b:with', () => {
+      const input = `<b:with value='
+        data:post.labels
+          filter (l => l.name != "featured")
+      ' var='labels'></b:with>`
+      const output = normalizeBloggerExpressions(input)
+      expect(output).toBe('<b:with value=\'data:post.labels filter (l => l.name != "featured")\' var=\'labels\'></b:with>')
+    })
+
+    it('preserves non-Blogger multiline HTML attributes intact', () => {
+      const input = `<div title="
+        First Line
+        Second Line
+      " data-custom="
+        multiline
+      "></div>`
+      const output = normalizeBloggerExpressions(input)
+      expect(output).toBe(input)
+    })
+
+    it('preserves expressions inside CDATA blocks and script/style tags intact', () => {
+      const input = `<b:skin><![CDATA[
+        /* expr:class='inside CDATA is preserved' */
+        body { color: red; }
+      ]]></b:skin>
+      <script>
+        const str = "expr:class='inside script is preserved'";
+      </script>`
+      const output = normalizeBloggerExpressions(input)
+      expect(output).toBe(input)
+    })
+
+    it('preserves self-closing void elements with expr:* attributes', () => {
+      const input = `<img
+        expr:src='
+          data:post.featuredImage
+        '
+        alt='Thumbnail'
+      />`
+      const output = normalizeBloggerExpressions(input)
+      expect(output).toContain('expr:src=\'data:post.featuredImage\'')
+      expect(output).toContain('/>')
+    })
+
+    it('integrates seamlessly inside processTemplate full pipeline', () => {
+      const input = `<html><body><a
+        class='btn'
+        expr:href='
+          data:post.hasJumpLink
+            ? data:post.url
+            : data:post.link
+        '
+      ><img src="pic.jpg"></a></body></html>`
+      const output = processTemplate(input)
+      expect(output).toContain('expr:href=\'data:post.hasJumpLink ? data:post.url : data:post.link\'')
+      expect(output).toContain('<img src="pic.jpg"/>')
+      expect(output).toContain('b:css=\'false\'')
     })
   })
 })

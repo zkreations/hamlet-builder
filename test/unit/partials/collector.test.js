@@ -40,6 +40,8 @@ describe('partials collector', () => {
     const loaded = await loadPartials(tmp.dir)
     expect(loaded.menu).toBe('<nav>menu</nav>\n')
     expect(loaded.item).toBe('<li>item</li>\n')
+    expect(loaded._partialsInfo.menu.file).toContain('_menu.hbs')
+    expect(loaded._partialsInfo.item.file).toContain('_item.hbs')
   })
 
   it('detects duplicate partial names across different directories', async () => {

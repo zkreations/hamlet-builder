@@ -35,4 +35,78 @@ describe('handlebars registry environment', () => {
     expect(hbs.partials['hamlet.functions']).toBeDefined()
     expect(hbs.partials['hamlet.picture']).toBeDefined()
   })
+
+  it('validates syntax and attaches file info when registering broken partial', () => {
+    const brokenPartials = {
+      broken: 'line 1\n{{#if unclosed}\nline 3',
+    }
+    Object.defineProperty(brokenPartials, '_partialsInfo', {
+      value: {
+        broken: { file: 'src/partials/_broken.hbs' },
+      },
+      enumerable: false,
+    })
+
+    expect(() => {
+      createHandlebarsEnvironment({ partials: brokenPartials })
+    }).toThrowError(/Parse error on line 2/)
+  })
+
+  it('tracks execution stack and attaches __renderStack on error', () => {
+    const partials = {
+      child: 'child start\n{{> missing}}\nchild end',
+      parent: 'parent start\n{{> child}}\nparent end',
+    }
+    Object.defineProperty(partials, '_partialsInfo', {
+      value: {
+        child: { file: 'src/partials/_child.hbs' },
+        parent: { file: 'src/partials/_parent.hbs' },
+      },
+      enumerable: false,
+    })
+
+    const hbs = createHandlebarsEnvironment({ partials })
+    const template = hbs.compile('{{> parent}}')
+
+    let caughtError = null
+    try {
+      template({})
+    }
+    catch (err) {
+      caughtError = err
+    }
+
+    expect(caughtError).toBeDefined()
+    expect(caughtError.message).toContain('The partial missing could not be found')
+    expect(caughtError.__renderStack).toBeDefined()
+    expect(caughtError.__renderStack).toHaveLength(2)
+    expect(caughtError.__renderStack[0].name).toBe('parent')
+    expect(caughtError.__renderStack[0].file).toBe('src/partials/_parent.hbs')
+    expect(caughtError.__renderStack[1].name).toBe('child')
+    expect(caughtError.__renderStack[1].file).toBe('src/partials/_child.hbs')
+    expect(caughtError.__renderStack[1].callSite).toEqual({ line: 2, column: 0 })
+  })
+
+  it('tags __activeHelper on error when helper throws', () => {
+    const hbs = createHandlebarsEnvironment({
+      helpers: {
+        failingHelper: () => {
+          throw new Error('Helper exploded')
+        },
+      },
+    })
+
+    const template = hbs.compile('hello {{failingHelper}}')
+    let caughtError = null
+    try {
+      template({})
+    }
+    catch (err) {
+      caughtError = err
+    }
+
+    expect(caughtError).toBeDefined()
+    expect(caughtError.message).toBe('Helper exploded')
+    expect(caughtError.__activeHelper).toBe('failingHelper')
+  })
 })

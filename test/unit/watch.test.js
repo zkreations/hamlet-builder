@@ -232,4 +232,34 @@ describe('watchMode configuration and execution', () => {
 
     await watcher.close()
   })
+
+  it('triggers script compilation when a .ts or .tsx file changes', async () => {
+    let eventHandler = null
+
+    vi.mocked(chokidar.watch).mockReturnValueOnce({
+      on: vi.fn((event, handler) => {
+        if (event === 'all')
+          eventHandler = handler
+      }),
+      close: vi.fn().mockResolvedValue(undefined),
+    })
+
+    const options = {
+      input: './src',
+      output: './dist',
+      cwd: '/test/app',
+      debounceDelay: 10,
+    }
+
+    const watcher = watchMode(options)
+    eventHandler('change', '/test/app/src/components/button.tsx')
+
+    await new Promise(resolve => setTimeout(resolve, 30))
+
+    expect(compileJS).toHaveBeenCalled()
+    expect(compileXML).toHaveBeenCalled()
+    expect(compileStyle).not.toHaveBeenCalled()
+
+    await watcher.close()
+  })
 })

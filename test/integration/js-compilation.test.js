@@ -162,4 +162,109 @@ describe('js compilation pipeline', () => {
     expect(fs.existsSync(jsFile)).toBe(true)
     expect(fs.existsSync(mapFile)).toBe(false)
   })
+
+  it('compiles .bundle.ts with TypeScript types and enums into valid IIFE', async () => {
+    const tsContent = `
+      export enum Direction {
+        Up = 'UP',
+        Down = 'DOWN',
+      }
+
+      interface Config {
+        dir: Direction;
+        count: number;
+      }
+
+      export function move(cfg: Config): string {
+        return 'Moved ' + cfg.dir + ' ' + cfg.count;
+      }
+    `
+    fs.writeFileSync(path.join(inDir.dir, 'main.bundle.ts'), tsContent)
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+    }
+
+    await compileJS(options)
+
+    const jsFile = path.join(outDir.dir, 'js', 'main.js')
+    expect(fs.existsSync(jsFile)).toBe(true)
+
+    const content = fs.readFileSync(jsFile, 'utf8')
+    expect(content).toContain('var main = (function')
+    expect(content).toContain('UP')
+    expect(content).toContain('DOWN')
+    expect(content).toContain('Moved ')
+    // Type annotations should be stripped
+    expect(content).not.toContain(': Config')
+  })
+
+  it('compiles .bundle.tsx with JSX syntax into valid IIFE', async () => {
+    const tsxContent = `
+      export function renderWidget() {
+        return <div className="blogger-widget"><span>Active</span></div>;
+      }
+    `
+    fs.writeFileSync(path.join(inDir.dir, 'widget.bundle.tsx'), tsxContent)
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+    }
+
+    await compileJS(options)
+
+    const jsFile = path.join(outDir.dir, 'js', 'widget.js')
+    expect(fs.existsSync(jsFile)).toBe(true)
+
+    const content = fs.readFileSync(jsFile, 'utf8')
+    expect(content).toContain('var widget = (function')
+    expect(content).toContain('React.createElement')
+    expect(content).toContain('blogger-widget')
+  })
+
+  it('generates source map file for .bundle.ts in development mode', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'tsdev.bundle.ts'), 'export const num: number = 42;')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'development',
+    }
+
+    await compileJS(options)
+
+    const jsFile = path.join(outDir.dir, 'js', 'tsdev.js')
+    const mapFile = path.join(outDir.dir, 'js', 'tsdev.js.map')
+
+    expect(fs.existsSync(jsFile)).toBe(true)
+    expect(fs.existsSync(mapFile)).toBe(true)
+
+    const jsContent = fs.readFileSync(jsFile, 'utf8')
+    expect(jsContent).toContain('//# sourceMappingURL=tsdev.js.map')
+
+    const mapContent = JSON.parse(fs.readFileSync(mapFile, 'utf8'))
+    expect(mapContent.version).toBe(3)
+    expect(mapContent.sources).toEqual(expect.arrayContaining([expect.stringContaining('tsdev.bundle.ts')]))
+  })
+
+  it('supports relative imports between .ts files without extensions or with ts extensions', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'math.ts'), 'export const add = (a: number, b: number): number => a + b;')
+    fs.writeFileSync(path.join(inDir.dir, 'calc.bundle.ts'), 'import { add } from "./math"; export const sum = add(2, 3);')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+    }
+
+    await compileJS(options)
+
+    const jsFile = path.join(outDir.dir, 'js', 'calc.js')
+    expect(fs.existsSync(jsFile)).toBe(true)
+
+    const content = fs.readFileSync(jsFile, 'utf8')
+    expect(content).toContain('var calc = (function')
+    expect(content).toContain('add(2, 3)')
+  })
 })

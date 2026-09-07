@@ -120,13 +120,14 @@ describe('js compilation pipeline', () => {
     await expect(compileJS(options)).resolves.not.toThrow()
   })
 
-  it('generates source map file in development mode', async () => {
+  it('generates source map file when sourcemap is enabled', async () => {
     fs.writeFileSync(path.join(inDir.dir, 'dev.bundle.js'), 'export const hello = "world";')
 
     const options = {
       input: inDir.dir,
       output: outDir.dir,
       mode: 'development',
+      sourcemap: true,
     }
 
     await compileJS(options)
@@ -224,13 +225,14 @@ describe('js compilation pipeline', () => {
     expect(content).toContain('blogger-widget')
   })
 
-  it('generates source map file for .bundle.ts in development mode', async () => {
+  it('generates source map file for .bundle.ts when sourcemap is enabled', async () => {
     fs.writeFileSync(path.join(inDir.dir, 'tsdev.bundle.ts'), 'export const num: number = 42;')
 
     const options = {
       input: inDir.dir,
       output: outDir.dir,
       mode: 'development',
+      sourcemap: true,
     }
 
     await compileJS(options)

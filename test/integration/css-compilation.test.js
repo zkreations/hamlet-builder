@@ -128,13 +128,14 @@ describe('css compilation pipeline', () => {
     await expect(compileStyle(options)).resolves.not.toThrow()
   })
 
-  it('generates source map file in development mode', async () => {
+  it('generates source map file when sourcemap is enabled', async () => {
     fs.writeFileSync(path.join(inDir.dir, 'dev.scss'), '.dev { display: flex; }')
 
     const options = {
       input: inDir.dir,
       output: outDir.dir,
       mode: 'development',
+      sourcemap: true,
     }
 
     await compileStyle(options)

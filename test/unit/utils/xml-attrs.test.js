@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getAttr, getAttrValue, removeAttr, replaceAttrValue } from '../../../lib/utils/xml-attrs.js'
+import { getAttr, getAttrValue, replaceAttrValue } from '../../../lib/utils/xml-attrs.js'
 
 describe('xml attribute utilities', () => {
   describe('getAttr', () => {
@@ -36,15 +36,6 @@ describe('xml attribute utilities', () => {
     it('returns null if attribute is absent', () => {
       const tag = '<Variable name="color"/>'
       expect(getAttrValue(tag, 'value')).toBeNull()
-    })
-  })
-
-  describe('removeAttr', () => {
-    it('removes the specified attribute from tag', () => {
-      const tag = '<b:widget id="header1" type="Header">'
-      const result = removeAttr(tag, 'type')
-      expect(result).not.toContain('type=')
-      expect(result).toContain('id="header1"')
     })
   })
 

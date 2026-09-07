@@ -64,4 +64,50 @@ describe('logger', () => {
 
     errorSpy.mockRestore()
   })
+
+  it('handles progress updates and clearing in TTY mode', () => {
+    const originalIsTTY = process.stderr.isTTY
+    const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+
+    try {
+      process.stderr.isTTY = true
+
+      const p = logger.progress('inspect', 'cyan', 'initial stage')
+      expect(stderrSpy).toHaveBeenCalled()
+      expect(stderrSpy.mock.calls[0][0]).toContain('[inspect]')
+      expect(stderrSpy.mock.calls[0][0]).toContain('initial stage')
+
+      p.update('next stage')
+      expect(stderrSpy.mock.calls[1][0]).toContain('next stage')
+
+      p.clear()
+      expect(stderrSpy.mock.calls[2][0]).toBe('\r\x1B[2K')
+    }
+    finally {
+      process.stderr.isTTY = originalIsTTY
+      stderrSpy.mockRestore()
+    }
+  })
+
+  it('no-ops progress in non-TTY mode', () => {
+    const originalIsTTY = process.stderr.isTTY
+    const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+
+    try {
+      process.stderr.isTTY = false
+
+      const p = logger.progress('inspect', 'cyan', 'should not write')
+      expect(stderrSpy).not.toHaveBeenCalled()
+
+      p.update('still nothing')
+      expect(stderrSpy).not.toHaveBeenCalled()
+
+      p.clear()
+      expect(stderrSpy).not.toHaveBeenCalled()
+    }
+    finally {
+      process.stderr.isTTY = originalIsTTY
+      stderrSpy.mockRestore()
+    }
+  })
 })

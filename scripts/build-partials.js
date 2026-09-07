@@ -1,10 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { globSync } from 'glob'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const rootDir = path.resolve(__dirname, '..')
+const rootDir = path.resolve(import.meta.dirname, '..')
 const baseDir = path.join(rootDir, 'src').replaceAll('\\', '/')
 const outputDir = path.join(rootDir, 'lib/data')
 

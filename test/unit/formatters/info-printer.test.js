@@ -139,4 +139,32 @@ describe('info-printer formatter', () => {
     expect(output).toContain('[summary]')
     expect(output).toContain('Conflicts: 1')
   })
+
+  it('marks child partials and the folder as used when folder partial is referenced in template', async () => {
+    const navDir = path.join(tmp.dir, 'nav')
+    fs.mkdirSync(navDir)
+    fs.writeFileSync(path.join(navDir, '_menu.hbs'), '<nav>menu</nav>')
+    fs.writeFileSync(path.join(navDir, '_item.hbs'), '<li>item</li>')
+    fs.writeFileSync(path.join(tmp.dir, 'theme.xml'), '<html>{{> folder.nav}}</html>')
+
+    await printPartialsInfo({
+      input: tmp.dir,
+      output: path.join(tmp.dir, 'dist'),
+      mode: 'development',
+      cwd: tmp.dir,
+    })
+
+    const output = warnSpy.mock.calls.map(c => c[0]).join('\n')
+
+    expect(output).toContain('[partials] project (2)')
+    expect(output).toContain('menu')
+    expect(output).toContain('item')
+    expect(output).not.toContain('menu            unused')
+    expect(output).not.toContain('item            unused')
+    expect(output).toContain('[partials] folders (1)')
+    expect(output).toContain('nav (2 partials)')
+    expect(output).not.toContain('unused')
+    expect(output).toContain('[diagnostics]')
+    expect(output).toContain('no conflicts or issues detected')
+  })
 })

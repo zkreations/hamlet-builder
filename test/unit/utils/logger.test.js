@@ -33,4 +33,35 @@ describe('logger', () => {
     expect(readyOutput.startsWith('\n')).toBe(true)
     expect(readyOutput.endsWith('\n')).toBe(true)
   })
+
+  it('prints warning and location lines', () => {
+    logger.resetWarnings()
+    logger.warn('Something suspicious', 'src/file.js:10:2')
+    expect(logger.getWarningCount()).toBe(1)
+    expect(warnSpy).toHaveBeenCalled()
+    const calls = warnSpy.mock.calls.map(c => c[0])
+    expect(calls.some(c => c.includes('Something suspicious'))).toBe(true)
+    expect(calls.some(c => c.includes('src/file.js:10:2'))).toBe(true)
+  })
+
+  it('prints error and multi-line array location with indentation', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    logger.resetErrors()
+
+    logger.error('Fatal failure', [
+      'src/partials/child.hbs:7:12',
+      'included from src/partials/parent.hbs:4:5',
+      'included from src/templates/root.hbs:13:28',
+    ])
+
+    expect(logger.getErrorCount()).toBe(1)
+    expect(errorSpy).toHaveBeenCalled()
+    const calls = errorSpy.mock.calls.map(c => c[0])
+    expect(calls.some(c => c.includes('Fatal failure'))).toBe(true)
+    expect(calls.some(c => c.includes('src/partials/child.hbs:7:12'))).toBe(true)
+    expect(calls.some(c => c.includes('included from src/partials/parent.hbs:4:5'))).toBe(true)
+    expect(calls.some(c => c.includes('included from src/templates/root.hbs:13:28'))).toBe(true)
+
+    errorSpy.mockRestore()
+  })
 })

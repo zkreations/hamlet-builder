@@ -55,6 +55,16 @@ describe('cli command line interface', () => {
     expect(opts.minifyJs).toBe(false)
   })
 
+  it('correctly parses --inspect flag', () => {
+    const cli = createCli({
+      pkg: { name: 'hamlet-builder', version: '1.0.0' },
+    })
+
+    cli.parse(['node', 'bin.js', '--inspect'])
+    const opts = cli.opts()
+    expect(opts.inspect).toBe(true)
+  })
+
   it('reads package.json version dynamically by default', () => {
     const cli = createCli()
     expect(cli.version()).toBe(pkgJson.version)

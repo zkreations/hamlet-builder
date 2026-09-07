@@ -42,6 +42,7 @@ describe('cli command line interface', () => {
       '--no-minify',
       '--no-minify-css',
       '--no-minify-js',
+      '-s',
     ])
     const opts = cli.opts()
 
@@ -53,6 +54,7 @@ describe('cli command line interface', () => {
     expect(opts.minify).toBe(false)
     expect(opts.minifyCss).toBe(false)
     expect(opts.minifyJs).toBe(false)
+    expect(opts.sourcemap).toBe(true)
   })
 
   it('correctly parses --inspect flag', () => {

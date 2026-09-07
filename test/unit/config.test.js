@@ -35,6 +35,7 @@ describe('configuration loader', () => {
       recompileOnAnyChange: false,
       helpers: {},
       plugins: [],
+      sourcemap: false,
     })
     expect(configs.theme).toEqual({})
   })

@@ -77,4 +77,22 @@ describe('watchMode configuration', () => {
     // Should NOT ignore normal files
     expect(ignoredFilter('/test/app/src/index.js')).toBe(false)
   })
+
+  it('closes watcher safely and registers an error handler', async () => {
+    const close = vi.fn().mockResolvedValue(undefined)
+    const watcher = { on: vi.fn(), close }
+    vi.mocked(chokidar.watch).mockImplementationOnce(() => watcher)
+
+    const options = {
+      input: './src',
+      output: './dist',
+      hamlet: {},
+    }
+
+    const result = watchMode(options)
+    await Promise.all([result.close(), result.close()])
+
+    expect(watcher.on).toHaveBeenCalledWith('error', expect.any(Function))
+    expect(close).toHaveBeenCalledTimes(1)
+  })
 })

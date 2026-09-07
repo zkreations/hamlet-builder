@@ -48,7 +48,7 @@ describe('css compilation pipeline', () => {
     expect(fs.existsSync(minified)).toBe(true)
 
     const unminContent = fs.readFileSync(unminified, 'utf8')
-    expect(unminContent).toContain('#ff5500')
+    expect(unminContent).toMatch(/#f50|#ff5500/)
     expect(unminContent).toContain('.header')
 
     const minContent = fs.readFileSync(minified, 'utf8')
@@ -126,5 +126,84 @@ describe('css compilation pipeline', () => {
     }
 
     await expect(compileStyle(options)).resolves.not.toThrow()
+  })
+
+  it('generates source map file in development mode', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'dev.scss'), '.dev { display: flex; }')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'development',
+    }
+
+    await compileStyle(options)
+
+    const cssFile = path.join(outDir.dir, 'css', 'dev.css')
+    const mapFile = path.join(outDir.dir, 'css', 'dev.css.map')
+
+    expect(fs.existsSync(cssFile)).toBe(true)
+    expect(fs.existsSync(mapFile)).toBe(true)
+
+    const cssContent = fs.readFileSync(cssFile, 'utf8')
+    expect(cssContent).toContain('/*# sourceMappingURL=dev.css.map */')
+
+    const mapContent = JSON.parse(fs.readFileSync(mapFile, 'utf8'))
+    expect(mapContent.version).toBe(3)
+    expect(mapContent.sources.length).toBeGreaterThan(0)
+  })
+
+  it('does not generate source map in production mode', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'prod.scss'), '.prod { display: flex; }')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'production',
+    }
+
+    await compileStyle(options)
+
+    const cssFile = path.join(outDir.dir, 'css', 'prod.css')
+    const mapFile = path.join(outDir.dir, 'css', 'prod.css.map')
+
+    expect(fs.existsSync(cssFile)).toBe(true)
+    expect(fs.existsSync(mapFile)).toBe(false)
+  })
+
+  it('applies vendor prefixes according to browserslist targets', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'prefix.css'), '.box { user-select: none; }')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      browserslist: ['ie 11', 'chrome 80'],
+    }
+
+    await compileStyle(options)
+
+    const cssFile = path.join(outDir.dir, 'css', 'prefix.css')
+    const cssContent = fs.readFileSync(cssFile, 'utf8')
+
+    expect(cssContent).toContain('-ms-user-select: none')
+    expect(cssContent).toContain('user-select: none')
+  })
+
+  it('transpiles CSS nesting properly according to browserslist targets', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'nesting.css'), '.parent { color: red; & .child { color: blue; } }')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      browserslist: ['ie 11'],
+    }
+
+    await compileStyle(options)
+
+    const cssFile = path.join(outDir.dir, 'css', 'nesting.css')
+    const cssContent = fs.readFileSync(cssFile, 'utf8')
+
+    // IE11 target should un-nest the rule into .parent .child
+    expect(cssContent).toContain('.parent .child')
   })
 })

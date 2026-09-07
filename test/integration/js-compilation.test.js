@@ -119,4 +119,47 @@ describe('js compilation pipeline', () => {
 
     await expect(compileJS(options)).resolves.not.toThrow()
   })
+
+  it('generates source map file in development mode', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'dev.bundle.js'), 'export const hello = "world";')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'development',
+    }
+
+    await compileJS(options)
+
+    const jsFile = path.join(outDir.dir, 'js', 'dev.js')
+    const mapFile = path.join(outDir.dir, 'js', 'dev.js.map')
+
+    expect(fs.existsSync(jsFile)).toBe(true)
+    expect(fs.existsSync(mapFile)).toBe(true)
+
+    const jsContent = fs.readFileSync(jsFile, 'utf8')
+    expect(jsContent).toContain('//# sourceMappingURL=dev.js.map')
+
+    const mapContent = JSON.parse(fs.readFileSync(mapFile, 'utf8'))
+    expect(mapContent.version).toBe(3)
+    expect(mapContent.sources).toEqual(expect.arrayContaining([expect.stringContaining('dev.bundle.js')]))
+  })
+
+  it('does not generate source map in production mode', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'prod.bundle.js'), 'export const hello = "world";')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'production',
+    }
+
+    await compileJS(options)
+
+    const jsFile = path.join(outDir.dir, 'js', 'prod.js')
+    const mapFile = path.join(outDir.dir, 'js', 'prod.js.map')
+
+    expect(fs.existsSync(jsFile)).toBe(true)
+    expect(fs.existsSync(mapFile)).toBe(false)
+  })
 })

@@ -51,6 +51,7 @@
     "prepublishOnly": "npm run build:partials"
   },
   "dependencies": {
+    "browserslist": "^4.28.8",
     "chokidar": "^5.0.0",
     "commander": "^15.0.0",
     "glob": "^13.0.6",

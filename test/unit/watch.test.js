@@ -44,6 +44,7 @@ vi.mock('../../lib/compilers/xml.js', () => ({
 describe('watchMode configuration and execution', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
@@ -200,7 +201,7 @@ describe('watchMode configuration and execution', () => {
 
   it('handles broken configuration reloading gracefully without crashing', async () => {
     let eventHandler = null
-    const errorSpy = vi.spyOn(logger, 'error')
+    const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
     const watchSpy = vi.spyOn(logger, 'watch')
 
     vi.mocked(chokidar.watch).mockReturnValueOnce({

@@ -1,19 +1,55 @@
 import chokidar from 'chokidar'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { compileStyle } from '../../lib/compilers/css.js'
+import { clearBundleCache, compileJS } from '../../lib/compilers/js.js'
+import { compileXML } from '../../lib/compilers/xml.js'
+import { loadConfigurations } from '../../lib/config.js'
 import { watchMode } from '../../lib/modes/watch.js'
+import { logger } from '../../lib/utils/logger.js'
 
 vi.mock('chokidar', () => ({
   default: {
     watch: vi.fn(() => ({
       on: vi.fn(),
-      close: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
     })),
   },
 }))
 
-describe('watchMode configuration', () => {
-  beforeEach(() => vi.spyOn(console, 'warn').mockImplementation(() => {}))
-  afterEach(() => vi.restoreAllMocks())
+vi.mock('../../lib/config.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    loadConfigurations: vi.fn(),
+  }
+})
+
+vi.mock('../../lib/compilers/js.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    clearBundleCache: vi.fn(),
+    compileJS: vi.fn().mockResolvedValue(undefined),
+  }
+})
+
+vi.mock('../../lib/compilers/css.js', () => ({
+  compileStyle: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('../../lib/compilers/xml.js', () => ({
+  compileXML: vi.fn().mockResolvedValue(undefined),
+}))
+
+describe('watchMode configuration and execution', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
 
   it('configures chokidar and ignores output directory to prevent infinite loops', () => {
     const options = {
@@ -42,7 +78,7 @@ describe('watchMode configuration', () => {
     }
 
     watchMode(options)
-    const [targets] = vi.mocked(chokidar.watch).mock.calls[1]
+    const [targets] = vi.mocked(chokidar.watch).mock.calls[0]
 
     expect(targets).toEqual(expect.arrayContaining([
       './src',
@@ -63,7 +99,7 @@ describe('watchMode configuration', () => {
     }
 
     watchMode(options)
-    const [, config] = vi.mocked(chokidar.watch).mock.calls[2]
+    const [, config] = vi.mocked(chokidar.watch).mock.calls[0]
     const ignoredFilter = config.ignored.find(item => typeof item === 'function')
 
     expect(ignoredFilter).toBeDefined()
@@ -76,5 +112,123 @@ describe('watchMode configuration', () => {
     expect(ignoredFilter('/test/app/.config')).toBe(false)
     // Should NOT ignore normal files
     expect(ignoredFilter('/test/app/src/index.js')).toBe(false)
+  })
+
+  it('cancels pending debounce timers when watcher.close is called', async () => {
+    const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout')
+    let eventHandler = null
+
+    vi.mocked(chokidar.watch).mockReturnValueOnce({
+      on: vi.fn((event, handler) => {
+        if (event === 'all')
+          eventHandler = handler
+      }),
+      close: vi.fn().mockResolvedValue(undefined),
+    })
+
+    const options = {
+      input: './src',
+      output: './dist',
+      debounceDelay: 500,
+    }
+
+    const watcher = watchMode(options)
+    expect(eventHandler).toBeDefined()
+
+    // Trigger a file change event to schedule debounceTimeout
+    eventHandler('change', './src/main.js')
+
+    // Close the watcher before debounce expires
+    await watcher.close()
+
+    expect(clearTimeoutSpy).toHaveBeenCalled()
+  })
+
+  it('reloads configuration and recompiles assets when a config file changes', async () => {
+    let eventHandler = null
+    const reloadSpy = vi.spyOn(logger, 'reload')
+
+    vi.mocked(chokidar.watch).mockReturnValueOnce({
+      on: vi.fn((event, handler) => {
+        if (event === 'all')
+          eventHandler = handler
+      }),
+      close: vi.fn().mockResolvedValue(undefined),
+    })
+
+    const newMockConfig = {
+      postcss: { plugins: ['mock-postcss'] },
+      rollup: { plugins: ['mock-rollup'] },
+      hamlet: { recompileOnAnyChange: true },
+      theme: { title: 'New Title' },
+    }
+    vi.mocked(loadConfigurations).mockResolvedValueOnce(newMockConfig)
+
+    const options = {
+      input: './src',
+      output: './dist',
+      cwd: '/test/app',
+      debounceDelay: 10,
+    }
+
+    const watcher = watchMode(options)
+    expect(eventHandler).toBeDefined()
+
+    // Simulate modifying theme.config.js
+    eventHandler('change', '/test/app/theme.config.js')
+
+    // Wait for debounce to execute
+    await new Promise(resolve => setTimeout(resolve, 30))
+
+    expect(clearBundleCache).toHaveBeenCalled()
+    expect(loadConfigurations).toHaveBeenCalledWith(
+      expect.anything(),
+      { fresh: true },
+    )
+    expect(options.postcss).toEqual(newMockConfig.postcss)
+    expect(options.rollup).toEqual(newMockConfig.rollup)
+    expect(options.hamlet).toEqual(newMockConfig.hamlet)
+    expect(options.theme).toEqual(newMockConfig.theme)
+
+    expect(reloadSpy).toHaveBeenCalledWith('Configuration changed, reloading...')
+    expect(compileJS).toHaveBeenCalled()
+    expect(compileStyle).toHaveBeenCalled()
+    expect(compileXML).toHaveBeenCalled()
+
+    await watcher.close()
+  })
+
+  it('handles broken configuration reloading gracefully without crashing', async () => {
+    let eventHandler = null
+    const errorSpy = vi.spyOn(logger, 'error')
+    const watchSpy = vi.spyOn(logger, 'watch')
+
+    vi.mocked(chokidar.watch).mockReturnValueOnce({
+      on: vi.fn((event, handler) => {
+        if (event === 'all')
+          eventHandler = handler
+      }),
+      close: vi.fn().mockResolvedValue(undefined),
+    })
+
+    vi.mocked(loadConfigurations).mockRejectedValueOnce(new Error('Syntax error in config file'))
+
+    const options = {
+      input: './src',
+      output: './dist',
+      cwd: '/test/app',
+      debounceDelay: 10,
+    }
+
+    const watcher = watchMode(options)
+    eventHandler('change', '/test/app/hamlet.config.js')
+
+    await new Promise(resolve => setTimeout(resolve, 30))
+
+    expect(errorSpy).toHaveBeenCalledWith('Syntax error in config file')
+    expect(watchSpy).toHaveBeenCalledWith('Failed to rebuild. Watching for fixes...')
+    expect(compileXML).not.toHaveBeenCalled()
+
+    await watcher.close()
   })
 })

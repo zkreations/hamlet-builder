@@ -172,6 +172,49 @@ describe('css compilation pipeline', () => {
     expect(fs.existsSync(mapFile)).toBe(false)
   })
 
+  it('does not generate source map by default in development mode', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'nodevmap.scss'), '.nodev { display: flex; }')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'development',
+    }
+
+    await compileStyle(options)
+
+    const cssFile = path.join(outDir.dir, 'css', 'nodevmap.css')
+    const mapFile = path.join(outDir.dir, 'css', 'nodevmap.css.map')
+
+    expect(fs.existsSync(cssFile)).toBe(true)
+    expect(fs.existsSync(mapFile)).toBe(false)
+
+    const cssContent = fs.readFileSync(cssFile, 'utf8')
+    expect(cssContent).not.toContain('sourceMappingURL')
+  })
+
+  it('generates source map when enabled via hamlet config option', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'hamletmap.scss'), '.hamletmap { display: flex; }')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'development',
+      hamlet: {
+        sourcemap: true,
+      },
+    }
+
+    await compileStyle(options)
+
+    const cssFile = path.join(outDir.dir, 'css', 'hamletmap.css')
+    const mapFile = path.join(outDir.dir, 'css', 'hamletmap.css.map')
+
+    expect(fs.existsSync(cssFile)).toBe(true)
+    expect(fs.existsSync(mapFile)).toBe(true)
+    expect(fs.readFileSync(cssFile, 'utf8')).toContain('/*# sourceMappingURL=hamletmap.css.map */')
+  })
+
   it('applies vendor prefixes according to browserslist targets', async () => {
     fs.writeFileSync(path.join(inDir.dir, 'prefix.css'), '.box { user-select: none; }')
 

@@ -164,6 +164,49 @@ describe('js compilation pipeline', () => {
     expect(fs.existsSync(mapFile)).toBe(false)
   })
 
+  it('does not generate source map by default in development mode', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'nodevmap.bundle.js'), 'export const a = 1;')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'development',
+    }
+
+    await compileJS(options)
+
+    const jsFile = path.join(outDir.dir, 'js', 'nodevmap.js')
+    const mapFile = path.join(outDir.dir, 'js', 'nodevmap.js.map')
+
+    expect(fs.existsSync(jsFile)).toBe(true)
+    expect(fs.existsSync(mapFile)).toBe(false)
+
+    const jsContent = fs.readFileSync(jsFile, 'utf8')
+    expect(jsContent).not.toContain('sourceMappingURL')
+  })
+
+  it('generates source map when enabled via hamlet config option', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'hamletmap.bundle.js'), 'export const b = 2;')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'development',
+      hamlet: {
+        sourcemap: true,
+      },
+    }
+
+    await compileJS(options)
+
+    const jsFile = path.join(outDir.dir, 'js', 'hamletmap.js')
+    const mapFile = path.join(outDir.dir, 'js', 'hamletmap.js.map')
+
+    expect(fs.existsSync(jsFile)).toBe(true)
+    expect(fs.existsSync(mapFile)).toBe(true)
+    expect(fs.readFileSync(jsFile, 'utf8')).toContain('//# sourceMappingURL=hamletmap.js.map')
+  })
+
   it('compiles .bundle.ts with TypeScript types and enums into valid IIFE', async () => {
     const tsContent = `
       export enum Direction {

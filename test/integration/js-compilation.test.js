@@ -1,7 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { compileJS } from '../../lib/compilers/js.js'
+import { clearBundleCache, compileJS } from '../../lib/compilers/js.js'
+import { logger } from '../../lib/utils/logger.js'
 import { createTempDir } from '../helpers/temp.js'
 
 describe('js compilation pipeline', () => {
@@ -311,5 +312,55 @@ describe('js compilation pipeline', () => {
     const content = fs.readFileSync(jsFile, 'utf8')
     expect(content).toContain('var calc = (function')
     expect(content).toContain('add(2, 3)')
+  })
+
+  it('clearBundleCache empties internal bundle cache map without errors', () => {
+    expect(() => clearBundleCache()).not.toThrow()
+  })
+
+  it('delegates Rollup warnings to custom onwarn handler when provided', async () => {
+    const onwarnSpy = vi.fn()
+    const warningPlugin = {
+      name: 'test-warn-plugin',
+      buildStart() {
+        this.warn('Custom rollup warning message')
+      },
+    }
+
+    fs.writeFileSync(path.join(inDir.dir, 'warn.bundle.js'), 'export const a = 1;')
+
+    await compileJS({
+      input: inDir.dir,
+      output: outDir.dir,
+      rollup: { plugins: [warningPlugin], onwarn: onwarnSpy },
+    })
+
+    expect(onwarnSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ message: expect.stringContaining('Custom rollup warning message') }),
+      expect.any(Function),
+    )
+  })
+
+  it('logs Rollup warnings via logger.warn when no custom onwarn is provided', async () => {
+    const loggerWarnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const warningPlugin = {
+      name: 'test-warn-plugin',
+      buildStart() {
+        this.warn('Fallback rollup warning message')
+      },
+    }
+
+    fs.writeFileSync(path.join(inDir.dir, 'warn-default.bundle.js'), 'export const b = 2;')
+
+    await compileJS({
+      input: inDir.dir,
+      output: outDir.dir,
+      rollup: { plugins: [warningPlugin] },
+    })
+
+    expect(loggerWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Fallback rollup warning message'),
+      expect.any(String),
+    )
   })
 })

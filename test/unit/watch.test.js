@@ -262,4 +262,81 @@ describe('watchMode configuration and execution', () => {
 
     await watcher.close()
   })
+
+  it('ignores addDir and unlinkDir directory events without triggering compilation', async () => {
+    let eventHandler = null
+
+    vi.mocked(chokidar.watch).mockReturnValueOnce({
+      on: vi.fn((event, handler) => {
+        if (event === 'all')
+          eventHandler = handler
+      }),
+      close: vi.fn().mockResolvedValue(undefined),
+    })
+
+    const options = {
+      input: './src',
+      output: './dist',
+      debounceDelay: 10,
+    }
+
+    const watcher = watchMode(options)
+    eventHandler('addDir', './src/new-folder')
+    eventHandler('unlinkDir', './src/old-folder')
+
+    await new Promise(resolve => setTimeout(resolve, 25))
+
+    expect(compileJS).not.toHaveBeenCalled()
+    expect(compileStyle).not.toHaveBeenCalled()
+    expect(compileXML).not.toHaveBeenCalled()
+
+    await watcher.close()
+  })
+
+  it('schedules pending rerun when changes occur during an in-flight compilation', async () => {
+    let eventHandler = null
+    let finishFirstXml = null
+
+    vi.mocked(chokidar.watch).mockReturnValueOnce({
+      on: vi.fn((event, handler) => {
+        if (event === 'all')
+          eventHandler = handler
+      }),
+      close: vi.fn().mockResolvedValue(undefined),
+    })
+
+    // First compilation will pause on compileXML until resolved
+    vi.mocked(compileXML).mockImplementationOnce(() => {
+      return new Promise((resolve) => {
+        finishFirstXml = resolve
+      })
+    }).mockResolvedValue(undefined)
+
+    const options = {
+      input: './src',
+      output: './dist',
+      debounceDelay: 10,
+    }
+
+    const watcher = watchMode(options)
+
+    // First change triggers in-flight compilation
+    eventHandler('change', './src/theme.scss')
+    await new Promise(resolve => setTimeout(resolve, 20))
+
+    expect(compileStyle).toHaveBeenCalledTimes(1)
+
+    // While first compilation is in progress, second change arrives
+    eventHandler('change', './src/theme.scss')
+
+    // Finish first compilation
+    finishFirstXml()
+
+    // Wait for debounce and execution of pending rerun
+    await new Promise(resolve => setTimeout(resolve, 35))
+
+    expect(compileStyle).toHaveBeenCalledTimes(2)
+
+    await watcher.close()
+  })
 })

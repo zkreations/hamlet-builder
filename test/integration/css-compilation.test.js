@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { compileStyle } from '../../lib/compilers/css.js'
+import { logger } from '../../lib/utils/logger.js'
 import { createTempDir } from '../helpers/temp.js'
 
 describe('css compilation pipeline', () => {
@@ -249,5 +250,49 @@ describe('css compilation pipeline', () => {
 
     // IE11 target should un-nest the rule into .parent .child
     expect(cssContent).toContain('.parent .child')
+  })
+
+  it('generates source map file for plain css files without sass', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'plain-map.css'), '.plain-map { color: blue; }')
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      mode: 'development',
+      sourcemap: true,
+    }
+
+    await compileStyle(options)
+
+    const cssFile = path.join(outDir.dir, 'css', 'plain-map.css')
+    const mapFile = path.join(outDir.dir, 'css', 'plain-map.css.map')
+
+    expect(fs.existsSync(cssFile)).toBe(true)
+    expect(fs.existsSync(mapFile)).toBe(true)
+    expect(fs.readFileSync(cssFile, 'utf8')).toContain('/*# sourceMappingURL=plain-map.css.map */')
+  })
+
+  it('logs PostCSS warnings when plugin issues a warning message', async () => {
+    fs.writeFileSync(path.join(inDir.dir, 'warn.css'), '.box { opacity: 0.5; }')
+
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const dummyPlugin = {
+      postcssPlugin: 'test-warn-plugin',
+      Once(root, { result }) {
+        root.warn(result, 'Custom PostCSS warning message')
+      },
+    }
+
+    const options = {
+      input: inDir.dir,
+      output: outDir.dir,
+      postcss: { plugins: [dummyPlugin] },
+    }
+
+    await compileStyle(options)
+
+    expect(warnSpy).toHaveBeenCalled()
+    const calls = warnSpy.mock.calls.map(c => c[0])
+    expect(calls.some(c => c.includes('Custom PostCSS warning message'))).toBe(true)
   })
 })

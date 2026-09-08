@@ -1,6 +1,9 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { lilconfig } from 'lilconfig'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getConfig, loadConfigurations } from '../../lib/config.js'
+import { createTempDir } from '../helpers/temp.js'
 
 vi.mock('lilconfig', () => {
   return {
@@ -137,5 +140,59 @@ describe('configuration loader', () => {
         }),
       }),
     )
+  })
+
+  it('dynamic loader loads ESM config files with default or named exports', async () => {
+    lilconfig.mockReturnValue({
+      search: vi.fn().mockResolvedValue(null),
+    })
+
+    const context = {
+      paths: { root: '/fresh-test', src: '/fresh-test/src', dist: '/fresh-test/dist' },
+      utils: { resolve: (...args) => args.join('/') },
+    }
+
+    await loadConfigurations(context, { fresh: true })
+
+    const lastCall = lilconfig.mock.calls.find(call => call[0] === 'hamlet')
+    const dynamicLoader = lastCall[1].loaders['.mjs']
+
+    const tmp = createTempDir('hamlet-cfg-test-')
+    const configPath1 = path.join(tmp.dir, 'hamlet.config.mjs')
+    const configPath2 = path.join(tmp.dir, 'theme.config.mjs')
+
+    try {
+      fs.writeFileSync(configPath1, 'export default { recompileOnAnyChange: true, title: "Hamlet" };')
+      const loaded1 = await dynamicLoader(configPath1)
+      expect(loaded1).toEqual({ recompileOnAnyChange: true, title: 'Hamlet' })
+
+      fs.writeFileSync(configPath2, 'export const setting = "enabled";')
+      const loaded2 = await dynamicLoader(configPath2)
+      expect(loaded2.setting).toBe('enabled')
+    }
+    finally {
+      tmp.cleanup()
+    }
+  })
+
+  it('dynamic loader re-throws syntax errors encountered in config files', async () => {
+    lilconfig.mockReturnValue({
+      search: vi.fn().mockResolvedValue(null),
+    })
+
+    await loadConfigurations({}, { fresh: false })
+    const lastCall = lilconfig.mock.calls.find(call => call[0] === 'hamlet')
+    const dynamicLoader = lastCall[1].loaders['.js']
+
+    const tmp = createTempDir('hamlet-cfg-err-')
+    const badConfigPath = path.join(tmp.dir, 'broken.config.js')
+
+    try {
+      fs.writeFileSync(badConfigPath, 'export default { invalid: syntax: error };')
+      await expect(dynamicLoader(badConfigPath)).rejects.toThrow()
+    }
+    finally {
+      tmp.cleanup()
+    }
   })
 })

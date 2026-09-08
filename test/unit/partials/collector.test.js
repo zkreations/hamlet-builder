@@ -55,15 +55,15 @@ describe('partials collector', () => {
 
     const result = await collectPartials(tmp.dir)
 
-    expect(result.duplicates.length).toBe(1)
-    expect(result.duplicates[0].name).toBe('button')
+    expect(result.duplicates).toHaveLength(1)
+    const [duplicate] = result.duplicates
+    expect(duplicate.name).toBe('button')
 
-    const conflictingFiles = [
-      path.normalize(result.duplicates[0].registered),
-      ...result.duplicates[0].duplicates.map(p => path.normalize(p)),
-    ]
-    expect(conflictingFiles).toContain(path.normalize(path.join(dirA, '_button.hbs')))
-    expect(conflictingFiles).toContain(path.normalize(path.join(dirB, '_button.hbs')))
+    const conflictingFiles = [duplicate.registered, ...duplicate.duplicates].map(p => path.normalize(p))
+    expect(conflictingFiles).toEqual(expect.arrayContaining([
+      path.normalize(path.join(dirA, '_button.hbs')),
+      path.normalize(path.join(dirB, '_button.hbs')),
+    ]))
   })
 
   it('detects duplicate folder names across nested directories', async () => {
@@ -77,14 +77,14 @@ describe('partials collector', () => {
 
     const result = await collectPartials(tmp.dir)
 
-    expect(result.folderDuplicates.length).toBe(1)
-    expect(result.folderDuplicates[0].name).toBe('folder.cards')
+    expect(result.folderDuplicates).toHaveLength(1)
+    const [folderDup] = result.folderDuplicates
+    expect(folderDup.name).toBe('folder.cards')
 
-    const conflictingFolders = [
-      path.normalize(result.folderDuplicates[0].registered),
-      ...result.folderDuplicates[0].duplicates.map(p => path.normalize(p)),
-    ]
-    expect(conflictingFolders).toContain(path.normalize(path1))
-    expect(conflictingFolders).toContain(path.normalize(path2))
+    const conflictingFolders = [folderDup.registered, ...folderDup.duplicates].map(p => path.normalize(p))
+    expect(conflictingFolders).toEqual(expect.arrayContaining([
+      path.normalize(path1),
+      path.normalize(path2),
+    ]))
   })
 })

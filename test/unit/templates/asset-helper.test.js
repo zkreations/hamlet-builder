@@ -1,26 +1,35 @@
 import fs from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHelpers } from '../../../lib/templates/helpers.js'
+import * as utils from '../../../lib/utils/index.js'
+import { createTempDir } from '../../helpers/temp.js'
+
+vi.mock('../../../lib/utils/index.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    getAsset: vi.fn(actual.getAsset),
+  }
+})
 
 describe('asset helper', () => {
   let tmpDir
   let helpers
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-asset-'))
-    helpers = createHelpers({ basePath: tmpDir })
+    tmpDir = createTempDir('hamlet-asset-')
+    helpers = createHelpers({ basePath: tmpDir.dir })
     vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true })
+    tmpDir.cleanup()
     vi.restoreAllMocks()
   })
 
   it('reads a valid asset inside basePath', () => {
-    const cssPath = path.join(tmpDir, 'style.css')
+    const cssPath = path.join(tmpDir.dir, 'style.css')
     fs.writeFileSync(cssPath, '.test { color: red; }')
 
     const result = helpers.asset('/style.css')
@@ -33,7 +42,7 @@ describe('asset helper', () => {
   })
 
   it('blocks sibling path traversal starting with project name prefix', () => {
-    const siblingFolder = `${tmpDir}-fake`
+    const siblingFolder = `${tmpDir.dir}-fake`
     fs.mkdirSync(siblingFolder, { recursive: true })
     fs.writeFileSync(path.join(siblingFolder, 'style.css'), '.fake {}')
 
@@ -47,7 +56,7 @@ describe('asset helper', () => {
   })
 
   it('blocks non-whitelisted file extensions', () => {
-    const dangerousPath = path.join(tmpDir, 'script.sh')
+    const dangerousPath = path.join(tmpDir.dir, 'script.sh')
     fs.writeFileSync(dangerousPath, 'echo hello')
 
     const result = helpers.asset('/script.sh')
@@ -55,30 +64,22 @@ describe('asset helper', () => {
   })
 
   it('detects circular references', () => {
-    const loopFile = path.join(tmpDir, 'loop.html')
+    const loopFile = path.join(tmpDir.dir, 'loop.html')
     fs.writeFileSync(loopFile, 'initial')
 
-    // To test circular detection, create a helper that re-enters asset() during asset reading
     let circularOutput
-    const originalGetAsset = fs.readFileSync
 
-    const spy = vi.spyOn(fs, 'readFileSync').mockImplementation((targetPath, encoding) => {
+    vi.mocked(utils.getAsset).mockImplementationOnce((targetPath) => {
       if (typeof targetPath === 'string' && targetPath.includes('loop.html')) {
-        // While loop.html is being processed (and is in activeAssets), trigger re-entrant call:
         circularOutput = helpers.asset('/loop.html')
-        return 'content'
+        return { content: 'content' }
       }
-      return originalGetAsset(targetPath, encoding)
+      return utils.getAsset(targetPath)
     })
 
-    try {
-      const result = helpers.asset('/loop.html')
-      expect(circularOutput.toString()).toBe('/* Circular reference: /loop.html */')
-      expect(result.toString()).toBe('content')
-    }
-    finally {
-      spy.mockRestore()
-    }
+    const result = helpers.asset('/loop.html')
+    expect(circularOutput.toString()).toBe('/* Circular reference: /loop.html */')
+    expect(result.toString()).toBe('content')
   })
 
   it('handles missing file gracefully with not found comment', () => {
@@ -89,38 +90,34 @@ describe('asset helper', () => {
   it('re-throws unexpected errors like EACCES', () => {
     const error = new Error('Permission denied')
     error.code = 'EACCES'
-    const spy = vi.spyOn(fs, 'readFileSync').mockImplementation(() => {
+
+    vi.mocked(utils.getAsset).mockImplementationOnce(() => {
       throw error
     })
 
-    try {
-      expect(() => helpers.asset('/style.css')).toThrow('Permission denied')
-    }
-    finally {
-      spy.mockRestore()
-    }
+    expect(() => helpers.asset('/style.css')).toThrow('Permission denied')
   })
 
   describe('assetCss and assetJs helpers', () => {
     let outDir
 
     beforeEach(() => {
-      outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hamlet-out-'))
-      fs.mkdirSync(path.join(outDir, 'css'), { recursive: true })
-      fs.mkdirSync(path.join(outDir, 'js'), { recursive: true })
+      outDir = createTempDir('hamlet-out-')
+      fs.mkdirSync(path.join(outDir.dir, 'css'), { recursive: true })
+      fs.mkdirSync(path.join(outDir.dir, 'js'), { recursive: true })
     })
 
     afterEach(() => {
-      fs.rmSync(outDir, { recursive: true, force: true })
+      outDir.cleanup()
     })
 
     it('loads unminified css in development mode', () => {
-      fs.writeFileSync(path.join(outDir, 'css', 'main.css'), 'body { dev: true; }')
-      fs.writeFileSync(path.join(outDir, 'css', 'main.min.css'), 'body{dev:false}')
+      fs.writeFileSync(path.join(outDir.dir, 'css', 'main.css'), 'body { dev: true; }')
+      fs.writeFileSync(path.join(outDir.dir, 'css', 'main.min.css'), 'body{dev:false}')
 
       const devHelpers = createHelpers({
-        basePath: tmpDir,
-        outputPath: outDir,
+        basePath: tmpDir.dir,
+        outputPath: outDir.dir,
         isDevelopment: true,
       })
 
@@ -132,12 +129,12 @@ describe('asset helper', () => {
     })
 
     it('loads minified css in production mode', () => {
-      fs.writeFileSync(path.join(outDir, 'css', 'main.css'), 'body { dev: true; }')
-      fs.writeFileSync(path.join(outDir, 'css', 'main.min.css'), 'body{dev:false}')
+      fs.writeFileSync(path.join(outDir.dir, 'css', 'main.css'), 'body { dev: true; }')
+      fs.writeFileSync(path.join(outDir.dir, 'css', 'main.min.css'), 'body{dev:false}')
 
       const prodHelpers = createHelpers({
-        basePath: tmpDir,
-        outputPath: outDir,
+        basePath: tmpDir.dir,
+        outputPath: outDir.dir,
         isDevelopment: false,
       })
 
@@ -146,12 +143,12 @@ describe('asset helper', () => {
     })
 
     it('loads unminified js in development mode', () => {
-      fs.writeFileSync(path.join(outDir, 'js', 'bundle.js'), 'console.log("dev");')
-      fs.writeFileSync(path.join(outDir, 'js', 'bundle.min.js'), 'console.log("prod")')
+      fs.writeFileSync(path.join(outDir.dir, 'js', 'bundle.js'), 'console.log("dev");')
+      fs.writeFileSync(path.join(outDir.dir, 'js', 'bundle.min.js'), 'console.log("prod")')
 
       const devHelpers = createHelpers({
-        basePath: tmpDir,
-        outputPath: outDir,
+        basePath: tmpDir.dir,
+        outputPath: outDir.dir,
         isDevelopment: true,
       })
 
@@ -163,12 +160,12 @@ describe('asset helper', () => {
     })
 
     it('loads minified js in production mode', () => {
-      fs.writeFileSync(path.join(outDir, 'js', 'bundle.js'), 'console.log("dev");')
-      fs.writeFileSync(path.join(outDir, 'js', 'bundle.min.js'), 'console.log("prod")')
+      fs.writeFileSync(path.join(outDir.dir, 'js', 'bundle.js'), 'console.log("dev");')
+      fs.writeFileSync(path.join(outDir.dir, 'js', 'bundle.min.js'), 'console.log("prod")')
 
       const prodHelpers = createHelpers({
-        basePath: tmpDir,
-        outputPath: outDir,
+        basePath: tmpDir.dir,
+        outputPath: outDir.dir,
         isDevelopment: false,
       })
 
@@ -177,7 +174,7 @@ describe('asset helper', () => {
     })
 
     it('warns and returns fallback comment when output path is missing', () => {
-      const emptyHelpers = createHelpers({ basePath: tmpDir })
+      const emptyHelpers = createHelpers({ basePath: tmpDir.dir })
       const resCss = emptyHelpers.assetCss('main')
       expect(resCss.toString()).toContain('Output path not configured')
 

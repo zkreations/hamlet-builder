@@ -1,59 +1,74 @@
-import fs from 'node:fs'
-import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { build } from '../../lib/builder.js'
-import { createTempDir } from '../helpers/temp.js'
+import { compileStyle } from '../../lib/compilers/css.js'
+import { compileJS } from '../../lib/compilers/js.js'
+import { compileXML } from '../../lib/compilers/xml.js'
+
+vi.mock('../../lib/compilers/css.js', () => ({
+  compileStyle: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('../../lib/compilers/js.js', () => ({
+  compileJS: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('../../lib/compilers/xml.js', () => ({
+  compileXML: vi.fn().mockResolvedValue(undefined),
+}))
 
 describe('builder orchestrator', () => {
-  let inDir
-  let outDir
-
   beforeEach(() => {
-    inDir = createTempDir('hamlet-builder-in-')
-    outDir = createTempDir('hamlet-builder-out-')
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.clearAllMocks()
   })
 
   afterEach(() => {
-    inDir.cleanup()
-    outDir.cleanup()
     vi.restoreAllMocks()
   })
 
-  it('orchestrates compilation of styles, scripts, and XML', async () => {
-    fs.writeFileSync(path.join(inDir.dir, 'main.scss'), 'a { text-decoration: none; }')
-    fs.writeFileSync(path.join(inDir.dir, 'index.bundle.js'), 'console.log("builder test");')
-    fs.writeFileSync(path.join(inDir.dir, 'index.xml'), '<html><body>Hello</body></html>')
+  it('orchestrates compilation of scripts and styles in parallel before compiling XML', async () => {
+    const callOrder = []
+
+    vi.mocked(compileJS).mockImplementation(async () => {
+      callOrder.push('js')
+    })
+    vi.mocked(compileStyle).mockImplementation(async () => {
+      callOrder.push('style')
+    })
+    vi.mocked(compileXML).mockImplementation(async () => {
+      callOrder.push('xml')
+    })
 
     const options = {
-      input: inDir.dir,
-      output: outDir.dir,
+      input: '/test/src',
+      output: '/test/dist',
       mode: 'production',
-      minify: false,
-      minifyCss: false,
-      minifyJs: false,
-      postcss: { plugins: [] },
-      rollup: { plugins: [] },
-      hamlet: { helpers: {}, plugins: [] },
     }
 
     await build(options)
 
-    expect(fs.existsSync(path.join(outDir.dir, 'css', 'main.css'))).toBe(true)
-    expect(fs.existsSync(path.join(outDir.dir, 'js', 'index.js'))).toBe(true)
-    expect(fs.existsSync(path.join(outDir.dir, 'index.xml'))).toBe(true)
+    expect(compileJS).toHaveBeenCalledWith(options)
+    expect(compileStyle).toHaveBeenCalledWith(options)
+    expect(compileXML).toHaveBeenCalledWith(options)
+
+    // XML must only be compiled after both JS and Style finish
+    expect(callOrder.indexOf('xml')).toBeGreaterThan(callOrder.indexOf('js'))
+    expect(callOrder.indexOf('xml')).toBeGreaterThan(callOrder.indexOf('style'))
   })
 
-  it('fails build when a compiler fails in non-watch mode', async () => {
-    fs.writeFileSync(path.join(inDir.dir, 'broken.scss'), '.broken { color: ; }')
+  it('fails build when a script or style compiler fails and prevents XML compilation', async () => {
+    vi.mocked(compileStyle).mockRejectedValueOnce(new Error('Style compilation error'))
 
-    const options = {
-      input: inDir.dir,
-      output: outDir.dir,
-      watch: false,
-    }
+    const options = { input: '/test/src', output: '/test/dist' }
 
-    await expect(build(options)).rejects.toThrow()
+    await expect(build(options)).rejects.toThrow('Style compilation error')
+    expect(compileXML).not.toHaveBeenCalled()
+  })
+
+  it('fails build when XML compiler fails', async () => {
+    vi.mocked(compileXML).mockRejectedValueOnce(new Error('XML compilation error'))
+
+    const options = { input: '/test/src', output: '/test/dist' }
+
+    await expect(build(options)).rejects.toThrow('XML compilation error')
   })
 })

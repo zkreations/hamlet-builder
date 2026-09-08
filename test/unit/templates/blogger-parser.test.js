@@ -67,11 +67,20 @@ describe('blogger parser', () => {
   })
 
   describe('variableAttributes', () => {
-    it('expands variable definition with type and description', () => {
+    it('infers type="color" and sets description for hex value', () => {
       const input = '<html><Variable name="themeColor" value="#ff0000"/></html>'
       const output = processTemplate(input)
       expect(output).toContain('name="themeColor"')
       expect(output).toContain('description="themeColor"')
+      expect(output).toContain('type="color"')
+      expect(output).toContain('default="#ff0000"')
+    })
+
+    it('falls back to type="string" for arbitrary text values', () => {
+      const input = '<html><Variable name="siteTitle" value="My Blog"/></html>'
+      const output = processTemplate(input)
+      expect(output).toContain('name="siteTitle"')
+      expect(output).toContain('description="siteTitle"')
       expect(output).toContain('type="string"')
     })
 

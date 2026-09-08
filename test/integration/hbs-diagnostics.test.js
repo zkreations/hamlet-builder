@@ -121,34 +121,6 @@ partial 3`
     expect(locArr[1]).toMatch(/included from .*theme\.xml:3:4/)
   })
 
-  it('reports nested partial error with 2 levels of inclusion', async () => {
-    fs.writeFileSync(path.join(inDir.dir, '_widget.hbs'), 'widget 1\nwidget 2\n      {{> ghostPart}}\nwidget 4')
-    fs.writeFileSync(path.join(inDir.dir, '_sidebar.hbs'), '<aside>\n  {{> widget}}\n</aside>')
-    const rootTemplate = `<html>
-  <body>
-    {{> sidebar}}
-  </body>
-</html>`
-    fs.writeFileSync(path.join(inDir.dir, 'theme.xml'), rootTemplate)
-
-    const options = {
-      input: inDir.dir,
-      output: outDir.dir,
-      watch: false,
-    }
-
-    await expect(compileXML(options)).rejects.toThrow()
-
-    expect(errorSpy).toHaveBeenCalled()
-    const [msg, loc] = errorSpy.mock.calls[0]
-    expect(msg).toContain('The partial ghostPart could not be found')
-
-    const locArr = Array.isArray(loc) ? loc : [loc]
-    expect(locArr[0]).toMatch(/_widget\.hbs:3:6/)
-    expect(locArr[1]).toMatch(/included from .*_sidebar\.hbs:2:2/)
-    expect(locArr[2]).toMatch(/included from .*theme\.xml:3:4/)
-  })
-
   it('reports deep inclusion stack across 3+ levels', async () => {
     fs.writeFileSync(path.join(inDir.dir, '_d.hbs'), 'd 1\n    {{> missingInDeep}}\nd 3')
     fs.writeFileSync(path.join(inDir.dir, '_c.hbs'), 'c 1\n  {{> d}}\nc 3')

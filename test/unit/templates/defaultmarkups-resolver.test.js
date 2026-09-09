@@ -409,6 +409,10 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
       expect(matches.length).toBe(2)
       expect(output).toContain('<h1>Site Title</h1>')
       expect(output).toContain('<p>Site Desc</p>')
+
+      // The first block STILL receives native Blogger neutralizations
+      expect(output).toContain('<b:defaultmarkup type=\'All\'>')
+      expect(output).toContain('<b:includable id=\'main\'/>')
     })
 
     it('consolidates blocks into one when mergeMarkups: true is specified in config', () => {

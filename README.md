@@ -10,19 +10,26 @@ Compiler for Blogger theme development. Powers the official [Hamlet](https://git
 
 ## Features
 
-- **Template compilation**: Compiles Handlebars (`.hbs`, `.handlebars`) and XML (`.xml`) templates into Blogger XML.
+- **Template compilation**: Compiles Handlebars (`.hbs`, `.handlebars`) and XML (`.xml`) templates into standard Blogger XML.
 - **JavaScript & TypeScript bundling**: Bundles `.js`, `.mjs`, `.cjs`, `.ts`, and `.tsx` scripts via Rollup and esbuild.
 - **CSS processing**: Compiles SCSS, SASS, and CSS using Sass, PostCSS, and LightningCSS with `browserslist` target resolution.
 - **Source maps**: Generated for styles and scripts via the `-s, --sourcemap` flag or configuration.
 - **Minification**: LightningCSS (CSS) and Terser (JS), configurable globally or per asset type.
-- **Project inspection**: `--inspect` command outputs a report of partials, helper counts, unused partials, and name collision warnings.
-- **Blogger normalizations**:
+- **Project inspection**: `--inspect` command outputs a structured report of partials, helper counts, unused partials, and name collision warnings.
+- **Blogger normalizations & syntax extensions**:
   - Self-closes void HTML tags (`<meta>`, `<link>`, `<img>`, etc.) for XML compliance.
-  - Injects standard root attributes into `<html>`.
-  - Collapses multiline Blogger expressions (`expr:*`, `cond`, `values`, `value`) onto single lines, preserving CDATA and script/style blocks.
-  - Expands simplified `<Variable>` and `<b:widget>` markup.
-- **Asset helpers**: Embed file assets with `asset`, or use `assetCss` and `assetJs` to switch between development and minified production bundles.
-- **Built-in partials and skin variables**: Ships with Hamlet functions and overrides, and converts theme skin `<Group>` variables into CSS custom properties via `hamlet.skinVars`.
+  - Injects standard root attributes into `<html>` and supports root directives (`h:mergeMarkups`, `h:resolveMarkups`).
+  - Auto-assigns sequential IDs to `<b:section>` and `<b:widget>` elements.
+  - Multi-variable `<b:with var:...>` declarations expanding into nested standard `<b:with>` scopes.
+  - Named attributes on `<b:include>` expanding into Blogger `data='{ ... }'` dictionary objects.
+  - Skin variable shorthands (`<skin:name/>`, `skin:name`, `$skin.name`) with dot normalization and subproperty resolution.
+  - Clean widget authoring via `override:<id>` attributes and direct content auto-wrapping.
+  - Automatic `b:defaultmarkups` suppression and multi-block merging.
+  - Collapses multiline Blogger expressions (`expr:*`, `cond`, `values`, `value`) onto single lines.
+  - Simplified `<Variable>` declarations with automatic type inference and `minmax` expansion.
+- **Static template linting**: Validates variable types, strict length units, strict color formats, skin variable declarations, section nesting, widget placement, and identifier uniqueness.
+- **Asset helpers**: Inline raw file assets with `asset`, or use `assetCss` and `assetJs` to switch between development and minified production bundles.
+- **Built-in partials & skin variables**: Ships with Hamlet functions and overrides, and converts theme skin `<Group>` variables into CSS custom properties via `hamlet.skinVars`.
 - **Plugin system**: Add namespaced helpers, partials, and data context via plugins.
 - **Error reporting**: File paths, line and column positions, and partial inclusion stack traces on compilation errors.
 
@@ -308,65 +315,216 @@ For font variables, it generates both the font rule and the family rule (`--var-
 
 ---
 
-## Blogger Normalizations
+## Blogger Normalizations & Syntax Extensions
 
-Hamlet Builder handles several repetitive requirements of Blogger XML automatically.
+Hamlet Builder provides an expressive set of syntax simplifications and automatic normalizations for Blogger templates.
 
 ### 1. Void Tag Self-Closing
 
-Standard HTML void tags (`<meta>`, `<link>`, `<img>`, `<input>`, `<br>`, `<hr>`, `<area>`, `<base>`, `<col>`, `<embed>`, `<param>`, `<source>`, `<track>`, `<wbr>`) are converted to self-closing XML tags to prevent validation errors when uploading themes to Blogger.
+Standard HTML void tags (`<meta>`, `<link>`, `<img>`, `<input>`, `<br>`, `<hr>`, `<area>`, `<base>`, `<col>`, `<embed>`, `<param>`, `<source>`, `<track>`, `<wbr>`) are converted to self-closing XML tags (`<meta/>`, `<link/>`, `<img/>`, etc.) to prevent validation errors when uploading themes to Blogger.
 
-### 2. Root Element Normalization
+### 2. Root Element Normalization & Directives
 
-A simple `<html>` tag:
+A standard `<html>` element is enriched with Blogger namespace attributes:
 
 ```xml
 <html class='theme'>
 ```
 
-Is expanded to:
+Compiled output:
 
 ```xml
 <html class='theme' b:css='false' b:js='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'>
 ```
 
-### 3. Simplified Variables
+#### Root Directives (`h:*`)
+
+You can configure per-document compiler behaviors by declaring `h:*` directives on the root `<html>` tag. These attributes are processed during build and stripped from the final XML output:
+
+- `h:resolveMarkups="false"`: Disables automatic `<b:defaultmarkups>` resolution for the template.
+- `h:mergeMarkups="true"`: Merges multiple `<b:defaultmarkups>` blocks (e.g. from separate partials) into a single consolidated block at the top of the template.
+
+```xml
+<html h:mergeMarkups="true">
+```
+
+### 3. Multi-Variable `<b:with>` Declarations
+
+Declare multiple scoped variables within a single `<b:with>` tag using the `var:<name>` syntax:
+
+```xml
+<b:with var:source='data:src.youtubeMaxResDefaultUrl'
+        var:image='resizeImage(data:source, 400, "16:9")'
+        var:servers='[ "content.com/img/a/" ]'>
+  <img expr:src='data:image'/>
+</b:with>
+```
+
+Compiled output:
+
+```xml
+<b:with value='data:src.youtubeMaxResDefaultUrl' var='source'>
+  <b:with value='resizeImage(data:source, 400, "16:9")' var='image'>
+    <b:with value='[ "content.com/img/a/" ]' var='servers'>
+      <img expr:src='data:image'/>
+    </b:with>
+  </b:with>
+</b:with>
+```
+
+Hamlet Builder automatically handles nesting, order preservation, and hierarchical indentation. Standard Blogger `<b:with value='...' var='...'>` declarations and expression variants (`expr:value`, `expr:var`) remain intact.
+
+### 4. Named Attributes on `<b:include>`
+
+Pass parameters directly to includables as XML attributes instead of manually writing Blogger dictionary literals:
+
+```xml
+<b:include name='@picture'
+           src='data:post.featuredImage'
+           ratio='16:9'
+           loading='lazy'
+           expr:sizes='"(min-width: 768px) 700px, 100vw"'/>
+```
+
+Compiled output:
+
+```xml
+<b:include name='@picture' data='{ src: data:post.featuredImage, ratio: "16:9", loading: "lazy", sizes: "(min-width: 768px) 700px, 100vw" }'/>
+```
+
+Values are automatically formatted according to their type (strings, numbers, booleans, arrays, objects, or Blogger `data:` / function expressions). Existing `data='{ ... }'` literals are merged seamlessly.
+
+### 5. Skin Variable Shorthands & Expressions
+
+Access skin variables anywhere in your templates with concise shorthands:
+
+#### Tag Syntax
+
+```xml
+<skin:primaryColor/>
+<skin:header.font.size/>
+```
+
+Compiled output:
+
+```xml
+<data:skin.vars.primaryColor/>
+<data:skin.vars.header_font.size/>
+```
+
+#### Expression Syntax
+
+In attribute expressions (`cond`, `value`, `values`, `expr:*`), prefix variables with `skin:` or `$skin.`:
+
+```xml
+<b:if cond='skin:header.bg.color == "#ffffff"'>
+<b:tag expr:style='"font-size: " + $skin.title.font.size'>
+```
+
+Compiled output:
+
+```xml
+<b:if cond='data:skin.vars.header_bg.color == "#ffffff"'>
+<b:tag expr:style='"font-size: " + data:skin.vars.title_font.size'>
+```
+
+Dotted skin variable names are normalized with underscores (`header.bg` &rarr; `header_bg`), while valid Blogger subproperties are preserved (`.size`, `.family` for fonts; `.red`, `.green`, `.blue`, `.alpha`, `.inverse`, `.transparent` for colors; `.image`, `.color` for backgrounds).
+
+### 6. Clean Widget Authoring (`override:*` and Direct Content)
+
+Simplify widget definitions by eliminating boilerplate:
+
+#### Automatic ID, Type, and Version
+
+```xml
+<b:section>
+  <b:widget/>
+  <b:widget type='PopularPosts' locked/>
+</b:section>
+```
+
+Compiled output:
+
+```xml
+<b:section id='section1'>
+  <b:widget id='HTML1' type='HTML' version='2'/>
+  <b:widget id='PopularPosts1' type='PopularPosts' locked='true' version='2'/>
+</b:section>
+```
+
+#### Includable Overrides with `override:<id>`
+
+Override specific widget includables directly on the `<b:widget>` tag:
+
+```xml
+<b:widget type='LinkList' title='Social Networks' override:main='widget:LinkList_SocialNetworks' locked/>
+```
+
+Compiled output:
+
+```xml
+<b:widget id='LinkList1' type='LinkList' title='Social Networks' locked='true' version='2'>
+  <b:includable id='main'>
+    <b:include name='widget:LinkList_SocialNetworks'/>
+  </b:includable>
+  <b:includable id='content'/>
+</b:widget>
+```
+
+Any unhandled native includables for that widget type (e.g. `<b:includable id='content'/>`) are automatically neutralized unless already suppressed in `<b:defaultmarkups>`.
+
+#### Direct Content Auto-Wrapping
+
+HTML markup or `<b:include>` tags placed directly inside a `<b:widget>` are automatically wrapped in `<b:includable id='main'>`:
+
+```xml
+<b:widget type='HTML' title='Banner'>
+  <div class='banner'>
+    <a href='/promo'>Special Offer</a>
+  </div>
+</b:widget>
+```
+
+Compiled output:
+
+```xml
+<b:widget id='HTML1' type='HTML' title='Banner' version='2'>
+  <b:includable id='main'>
+    <div class='banner'>
+      <a href='/promo'>Special Offer</a>
+    </div>
+  </b:includable>
+  <b:includable id='content'/>
+</b:widget>
+```
+
+`<b:widget-settings>` blocks placed inside widgets are strictly preserved at the top.
+
+### 7. Document Defaultmarkups Resolution & Merging
+
+When `<b:defaultmarkups>` is present, Hamlet Builder analyzes all native widget groups (`All`, `Header`, `Blog`, `FeaturedPost`, `PopularPosts`, `LinkList`, `Subscribe`, etc.) and automatically neutralizes any unhandled default includables.
+
+With `mergeMarkups: true` (in config) or `h:mergeMarkups="true"` (on `<html>`), multiple `<b:defaultmarkups>` blocks scattered across different partials are merged and consolidated into a single clean block at the beginning of the template.
+
+### 8. Simplified `<Variable>` Declarations
 
 Declare skin variables concisely:
 
 ```xml
 <Variable name="brandColor"/>
+<Variable name="headerHeight" minmax="60px 120px"/>
 ```
 
 Compiled output:
 
 ```xml
 <Variable name='brandColor' description='brandColor' type='string'/>
+<Variable name='headerHeight' description='headerHeight' type='length' min='60px' max='120px'/>
 ```
 
-### 4. Simplified Widgets
+Types (`color`, `length`, `string`) are automatically inferred from `value` or `minmax` attributes when omitted.
 
-Omit boilerplate from `<b:widget>`:
-
-```xml
-<b:widget/>
-<b:widget type='PopularPosts'/>
-<b:widget type='Label'/>
-<b:widget type='Label'/>
-```
-
-Compiled output:
-
-```xml
-<b:widget id='HTML1' type='HTML' version='2'/>
-<b:widget id='PopularPosts1' type='PopularPosts' version='2'/>
-<b:widget id='Label1' type='Label' version='2'/>
-<b:widget id='Label2' type='Label' version='2'/>
-```
-
-If `type` is omitted or invalid, it defaults to `HTML`.
-
-### 5. Multiline Expression Normalization
+### 9. Multiline Expression Normalization
 
 Line breaks and excess whitespace in Blogger expression attributes (`expr:*`, `cond`, `values`, `value`) are collapsed onto single lines:
 
@@ -384,6 +542,17 @@ Compiled output:
 ```
 
 CDATA blocks, `<script>`, and `<style>` blocks are preserved as-is.
+
+---
+
+## Blogger Template Linter
+
+Hamlet Builder includes a built-in static analyzer that validates Blogger XML templates during compilation, preventing silent failures and theme upload errors:
+
+- **Variable Validation**: Ensures variable types match supported Blogger types (`color`, `length`, `font`, `string`, `background`, `image`).
+- **Strict Color & Length Rules**: Enforces valid Blogger color formats (3/6-digit hex, rgb, rgba, `transparent`) and length units (`px`, `em`).
+- **Skin Variable Verification**: Detects undeclared skin variables and validates subproperties on `color`, `font`, and `background` variables.
+- **Structural Integrity**: Enforces unique widget and section IDs, unique includable IDs, valid widget types, section nesting rules, and ensures widgets are placed inside `<b:section>`.
 
 ---
 
@@ -408,6 +577,12 @@ import myPlugin from 'hamlet-plugin-custom'
 export default {
   // Recompile CSS when any template changes (useful for Tailwind CSS)
   recompileOnAnyChange: false,
+
+  // Enable or disable automatic <b:defaultmarkups> resolution
+  resolveMarkups: true,
+
+  // Merge multiple <b:defaultmarkups> blocks into a single consolidated block
+  mergeMarkups: false,
 
   // Enable sourcemaps for CSS and JS
   sourcemap: false,

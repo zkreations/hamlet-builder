@@ -250,4 +250,47 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
       warnSpy.mockRestore()
     })
   })
+
+  describe('self-closing and indentation formatting', () => {
+    it('activates and generates neutralizations with self-closing <b:defaultmarkups/>', () => {
+      const input = `<html><body>
+        <b:defaultmarkups/>
+      </body></html>`
+
+      const output = processTemplate(input)
+
+      expect(output).toContain('<b:defaultmarkups>')
+      expect(output).toContain('</b:defaultmarkups>')
+      expect(output).toContain('<b:defaultmarkup type=\'All\'>')
+      expect(output).toContain('<b:includable id=\'main\'/>')
+      expect(output).toContain('<b:includable id=\'content\'/>')
+    })
+
+    it('respects base indentation and indents children proportionally', () => {
+      const input = `<html>
+  <body>
+    <b:defaultmarkups>
+      <b:defaultmarkup type='All'>
+        <b:includable id='main' var='this'>
+          <b:include name='widget-title'/>
+          <b:include name='content'/>
+        </b:includable>
+      </b:defaultmarkup>
+    </b:defaultmarkups>
+  </body>
+</html>`
+
+      const output = processTemplate(input)
+
+      // Base indent is 4 spaces
+      expect(output).toContain('    <b:defaultmarkups>')
+      expect(output).toContain('      <b:defaultmarkup type=\'All\'>')
+      expect(output).toContain('        <b:includable id=\'main\' var=\'this\'>')
+      expect(output).toContain('          <b:include name=\'widget-title\'/>')
+      expect(output).toContain('          <b:include name=\'content\'/>')
+      expect(output).toContain('        </b:includable>')
+      expect(output).toContain('      </b:defaultmarkup>')
+      expect(output).toContain('    </b:defaultmarkups>')
+    })
+  })
 })

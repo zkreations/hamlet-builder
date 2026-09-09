@@ -147,7 +147,7 @@ describe('widget Includables System (Phase 4)', () => {
       </html>`
       const output = processTemplate(input)
 
-      expect(output).toContain('<b:includable id=\'main\'>\n    <b:include name=\'custom_main\'/>\n  </b:includable>')
+      expect(output).toContain('<b:includable id=\'main\'>\n              <b:include name=\'custom_main\'/>\n            </b:includable>')
       expect(output).toContain('<b:includable id=\'content\'/>')
       expect(output).toContain('<b:includable id=\'list\'/>')
       expect(output).toContain('<b:includable id=\'item\'/>')
@@ -163,7 +163,7 @@ describe('widget Includables System (Phase 4)', () => {
       </b:section></body></html>`
       const output = processTemplate(input)
 
-      expect(output).toContain('<b:includable id=\'main\'>\n    <b:include name=\'custom_main\'/>\n  </b:includable>')
+      expect(output).toContain('<b:includable id=\'main\'>\n            <b:include name=\'custom_main\'/>\n          </b:includable>')
       expect(output).toContain('<div class=\'custom-content\'>Static</div>')
       expect(output).not.toContain('<b:includable id=\'content\'/>')
     })
@@ -290,7 +290,7 @@ describe('widget Includables System (Phase 4)', () => {
       const output = processTemplate(input)
 
       expect(output).toContain('<b:widget id=\'LinkList1\' type=\'LinkList\' title=\'Social Networks\' locked=\'true\' version=\'2\'>')
-      expect(output).toContain('<b:includable id=\'main\'>\n    <b:include name=\'widget:LinkList_SocialNetworks\'/>\n  </b:includable>')
+      expect(output).toContain('<b:includable id=\'main\'>\n            <b:include name=\'widget:LinkList_SocialNetworks\'/>\n          </b:includable>')
       expect(output).toContain('<b:includable id=\'content\'/>')
     })
 
@@ -307,8 +307,36 @@ describe('widget Includables System (Phase 4)', () => {
       expect(output).toContain('<b:widget id=\'HTML1\' type=\'HTML\' title=\'Copyright\' locked=\'true\' version=\'2\'>')
       expect(output).toContain('<b:widget-settings>')
       expect(output).toContain('Developed by <a href="https://zkreations.com">zkreations</a>')
-      expect(output).toContain('<b:includable id=\'main\'>\n    <b:include name=\'widget:HTML_Copyright\'/>\n  </b:includable>')
+      expect(output).toContain('<b:includable id=\'main\'>\n            <b:include name=\'widget:HTML_Copyright\'/>\n          </b:includable>')
       expect(output).toContain('<b:includable id=\'content\'/>')
+    })
+  })
+
+  describe('hierarchical indentation preservation', () => {
+    it('preserves 4 spaces base indent for clean widget generation', () => {
+      const input = [
+        '<html><body><b:section id=\'s\'>',
+        '    <b:widget type=\'LinkList\' override:main=\'custom_main\'/>',
+        '</b:section></body></html>',
+      ].join('\n')
+
+      const output = processTemplate(input)
+
+      expect(output).toContain('    <b:widget id=\'LinkList1\' type=\'LinkList\' version=\'2\'>\n      <b:includable id=\'main\'>\n        <b:include name=\'custom_main\'/>\n      </b:includable>\n      <b:includable id=\'content\'/>\n    </b:widget>')
+    })
+
+    it('preserves tab indentation for direct content auto-wrapping', () => {
+      const input = [
+        '<html><body><b:section id=\'s\'>',
+        '\t\t<b:widget type=\'HTML\'>',
+        '\t\t\t<div class=\'foo\'>bar</div>',
+        '\t\t</b:widget>',
+        '</b:section></body></html>',
+      ].join('\n')
+
+      const output = processTemplate(input)
+
+      expect(output).toContain('\t\t<b:widget id=\'HTML1\' type=\'HTML\' version=\'2\'>\n\t\t\t<b:includable id=\'main\'>\n\t\t\t\t<div class=\'foo\'>bar</div>\n\t\t\t</b:includable>\n\t\t\t<b:includable id=\'content\'/>\n\t\t</b:widget>')
     })
   })
 })

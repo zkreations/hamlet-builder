@@ -119,4 +119,52 @@ describe('multi-variable <b:with> expansion (Fase 2)', () => {
     // Check include attributes expansion from Fase 1 still works seamlessly together
     expect(output).toContain('<b:include name=\'@avatar\' data=\'{ src: data:avatar, loading: "lazy" }\'/>')
   })
+
+  describe('hierarchical indentation preservation', () => {
+    it('preserves base indent and steps each nested <b:with> level and its closing tag with spaces', () => {
+      const input = [
+        '    <b:with var:a=\'1\' var:b=\'2\' var:c=\'3\'>',
+        '      <div>content</div>',
+        '    </b:with>',
+      ].join('\n')
+
+      const output = expandMultiWith(input)
+      const expected = [
+        '    <b:with value=\'1\' var=\'a\'>',
+        '      <b:with value=\'2\' var=\'b\'>',
+        '        <b:with value=\'3\' var=\'c\'>',
+        '      <div>content</div>',
+        '        </b:with>',
+        '      </b:with>',
+        '    </b:with>',
+      ].join('\n')
+
+      expect(output).toBe(expected)
+    })
+
+    it('preserves base indent and steps each nested <b:with> level and its closing tag with tabs', () => {
+      const input = [
+        '\t\t<b:with var:first=\'1\' var:second=\'2\'>',
+        '\t\t\t<span>tabbed</span>',
+        '\t\t</b:with>',
+      ].join('\n')
+
+      const output = expandMultiWith(input)
+      const expected = [
+        '\t\t<b:with value=\'1\' var=\'first\'>',
+        '\t\t\t<b:with value=\'2\' var=\'second\'>',
+        '\t\t\t<span>tabbed</span>',
+        '\t\t\t</b:with>',
+        '\t\t</b:with>',
+      ].join('\n')
+
+      expect(output).toBe(expected)
+    })
+
+    it('preserves single line inline expansion without adding unwanted linebreaks', () => {
+      const input = '<b:with var:x=\'10\' var:y=\'20\'><span>inline</span></b:with>'
+      const output = expandMultiWith(input)
+      expect(output).toBe('<b:with value=\'10\' var=\'x\'><b:with value=\'20\' var=\'y\'><span>inline</span></b:with></b:with>')
+    })
+  })
 })

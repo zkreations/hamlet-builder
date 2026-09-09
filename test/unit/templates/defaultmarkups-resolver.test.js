@@ -141,7 +141,7 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
     })
   })
 
-  describe('h:resolveMarkups directive', () => {
+  describe('h:resolveMarkups directive and precedence', () => {
     it('disables normalization completely when h:resolveMarkups="false" is present', () => {
       const input = `<html h:resolveMarkups='false'><body>
         <b:defaultmarkups>
@@ -170,6 +170,95 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
     it('strips h:resolveMarkups from <html> when enabled', () => {
       const input = `<html h:resolveMarkups='true'><body><b:defaultmarkups><b:defaultmarkup type='Header'><b:includable id='title'/></b:defaultmarkup></b:defaultmarkups></body></html>`
       const output = processTemplate(input)
+      expect(output).not.toContain('h:resolveMarkups')
+    })
+
+    it('disables normalization when config has resolveMarkups: false and no root directive is present', () => {
+      const input = `<html><body>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>Version A</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>Version B</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      </body></html>`
+
+      const output = processTemplate(input, { hamlet: { resolveMarkups: false } })
+
+      const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
+      expect(matches.length).toBe(2)
+      expect(output).toContain('Version A')
+      expect(output).toContain('Version B')
+    })
+
+    it('root directive h:resolveMarkups="true" overrides config resolveMarkups: false', () => {
+      const input = `<html h:resolveMarkups='true'><body>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>Version A</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>Version B</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      </body></html>`
+
+      const output = processTemplate(input, { hamlet: { resolveMarkups: false } })
+
+      const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
+      expect(matches.length).toBe(1)
+      expect(output).toContain('Version B')
+      expect(output).not.toContain('h:resolveMarkups')
+    })
+
+    it('root directive h:resolveMarkups="false" overrides config resolveMarkups: true', () => {
+      const input = `<html h:resolveMarkups='false'><body>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>Version A</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>Version B</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      </body></html>`
+
+      const output = processTemplate(input, { hamlet: { resolveMarkups: true } })
+
+      const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
+      expect(matches.length).toBe(2)
+      expect(output).toContain('Version A')
+      expect(output).toContain('Version B')
+      expect(output).not.toContain('h:resolveMarkups')
+    })
+
+    it('bare h:resolveMarkups attribute on <html> acts as enabled and overrides config resolveMarkups: false', () => {
+      const input = `<html h:resolveMarkups><body>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>Version A</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>Version B</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      </body></html>`
+
+      const output = processTemplate(input, { hamlet: { resolveMarkups: false } })
+
+      const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
+      expect(matches.length).toBe(1)
+      expect(output).toContain('Version B')
       expect(output).not.toContain('h:resolveMarkups')
     })
   })

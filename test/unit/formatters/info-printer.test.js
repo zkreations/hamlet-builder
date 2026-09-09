@@ -33,6 +33,7 @@ describe('info-printer formatter', () => {
     expect(output).toContain('input:                ./')
     expect(output).toContain('mode:                 development')
     expect(output).toContain('minify:               css, js')
+    expect(output).toContain('resolveMarkups:       true')
     expect(output).toContain('[partials]')
     expect(output).toContain('hamlet (14 built-in)')
     expect(output).toContain('syntax: {{> hamlet.<name>}}')

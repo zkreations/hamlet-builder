@@ -61,10 +61,7 @@ describe('info-printer formatter', () => {
     fs.writeFileSync(path.join(navDir, '_menu.hbs'), '<nav>menu</nav>')
     fs.writeFileSync(path.join(navDir, '_item.hbs'), '<li>item</li>')
     fs.writeFileSync(path.join(compDir, '_card.hbs'), '<div class="card">card</div>')
-    // Duplicate name collision
     fs.writeFileSync(path.join(dupDir, '_menu.hbs'), '<nav>duplicate</nav>')
-
-    // Template that references menu, item, and hamlet built-ins
     fs.writeFileSync(path.join(tmp.dir, 'theme.xml'), '<html><body>{{> menu}}{{> item}}{{> hamlet.image}}{{> hamlet.snippet}}</body></html>')
 
     await printPartialsInfo({
@@ -92,14 +89,11 @@ describe('info-printer formatter', () => {
 
     const output = warnSpy.mock.calls.map(c => c[0]).join('\n')
 
-    // Config
     expect(output).toContain('minify:               css')
 
-    // Hamlet built-ins in use
     expect(output).toContain('in use (2):     image, snippet')
     expect(output).toContain('available (12):')
 
-    // Normal partials grouped by folder
     expect(output).toContain('[partials] project (3)')
     expect(output).toContain('syntax: {{> <name>}}')
     expect(output).toContain('nav/')
@@ -110,22 +104,18 @@ describe('info-printer formatter', () => {
     expect(output).toContain('unused')
     expect(output).toContain('_card.hbs')
 
-    // Folders
     expect(output).toContain('[partials] folders (3)')
     expect(output).toContain('syntax: {{> folder.<name>}}')
     expect(output).toContain('nav (2 partials')
 
-    // Plugins grouped by namespace
     expect(output).toContain('[partials] plugins (2)')
     expect(output).toContain('seo (2)')
     expect(output).toContain('syntax: {{> seo.<name>}}')
     expect(output).toContain('meta')
     expect(output).toContain('schema')
 
-    // Helpers
     expect(output).toContain('21 built-in · 1 custom')
 
-    // Diagnostics
     expect(output).toContain('[diagnostics]')
     expect(output).toContain('warn: 1 name collision detected')
     expect(output).toContain('menu')
@@ -137,7 +127,6 @@ describe('info-printer formatter', () => {
     expect(output).toContain('seo.meta')
     expect(output).toContain('seo.schema')
 
-    // Summary
     expect(output).toContain('[summary]')
     expect(output).toContain('Conflicts: 1')
   })

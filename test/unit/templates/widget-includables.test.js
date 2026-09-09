@@ -116,10 +116,8 @@ describe('widget Includables System (Phase 4)', () => {
         </b:defaultmarkups>
       `
       const map = collectDocumentDefaultMarkups(xml)
-      // For Subscribe, specific type overrides All
       expect(isCleanInDefaultMarkups('main', 'Subscribe', map)).toBe(false)
       expect(isCleanInDefaultMarkups('content', 'Subscribe', map)).toBe(true)
-      // For other widget types, All applies
       expect(isCleanInDefaultMarkups('main', 'LinkList', map)).toBe(true)
       expect(isCleanInDefaultMarkups('content', 'LinkList', map)).toBe(false)
     })
@@ -211,7 +209,6 @@ describe('widget Includables System (Phase 4)', () => {
       const output = processTemplate(input)
 
       expect(output).toContain('<b:includable id=\'myCustomSnippet\'>\n    <b:include name=\'foo_bar\'/>\n  </b:includable>')
-      // Also neutralizes native markups of HTML ('main' and 'content')
       expect(output).toContain('<b:includable id=\'main\'/>')
       expect(output).toContain('<b:includable id=\'content\'/>')
     })
@@ -235,13 +232,9 @@ describe('widget Includables System (Phase 4)', () => {
       const output = processTemplate(input)
       const widgetContent = output.match(/<b:widget\b[^>]+id='Sub1'[^>]*>([\s\S]*?)<\/b:widget>/)?.[1] ?? ''
 
-      // 'main' is overridden
       expect(widgetContent).toContain('<b:includable id=\'main\'>\n              <b:include name=\'custom_main\'/>\n            </b:includable>')
-      // 'feeds' has content in defaultmarkups, so it MUST be neutralized in widget
       expect(widgetContent).toContain('<b:includable id=\'feeds\'/>')
-      // 'cleanSnippet' is self-closing in defaultmarkups, so it MUST NOT be duplicated in widget
       expect(widgetContent).not.toContain('<b:includable id=\'cleanSnippet\'/>')
-      // 'content' (from All) was cleanly generated in defaultmarkups, so it MUST NOT be in widget
       expect(widgetContent).not.toContain('<b:includable id=\'content\'/>')
     })
 
@@ -287,7 +280,6 @@ describe('widget Includables System (Phase 4)', () => {
       const widgetContent = output.match(/<b:widget\b[^>]+id='Sub1'[^>]*>([\s\S]*?)<\/b:widget>/)?.[1] ?? ''
 
       expect(widgetContent).toContain('<b:includable id=\'main\'>\n              <b:include name=\'custom_main\'/>\n            </b:includable>')
-      // Since the last definition in the document was not self-closing, it must be neutralized in the widget
       expect(widgetContent).toContain('<b:includable id=\'feeds\'/>')
     })
 

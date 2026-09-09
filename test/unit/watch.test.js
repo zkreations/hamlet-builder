@@ -104,14 +104,11 @@ describe('watchMode configuration and execution', () => {
     const ignoredFilter = config.ignored.find(item => typeof item === 'function')
 
     expect(ignoredFilter).toBeDefined()
-    // Should ignore arbitrary dotfiles
     expect(ignoredFilter('/test/app/.DS_Store')).toBe(true)
     expect(ignoredFilter('/test/app/.editorconfig')).toBe(true)
-    // Should NOT ignore config dotfiles
     expect(ignoredFilter('/test/app/.hamletrc.json')).toBe(false)
     expect(ignoredFilter('/test/app/.themerc.js')).toBe(false)
     expect(ignoredFilter('/test/app/.config')).toBe(false)
-    // Should NOT ignore normal files
     expect(ignoredFilter('/test/app/src/index.js')).toBe(false)
   })
 
@@ -136,10 +133,8 @@ describe('watchMode configuration and execution', () => {
     const watcher = watchMode(options)
     expect(eventHandler).toBeDefined()
 
-    // Trigger a file change event to schedule debounceTimeout
     eventHandler('change', './src/main.js')
 
-    // Close the watcher before debounce expires
     await watcher.close()
 
     expect(clearTimeoutSpy).toHaveBeenCalled()
@@ -175,10 +170,8 @@ describe('watchMode configuration and execution', () => {
     const watcher = watchMode(options)
     expect(eventHandler).toBeDefined()
 
-    // Simulate modifying theme.config.js
     eventHandler('change', '/test/app/theme.config.js')
 
-    // Wait for debounce to execute
     await new Promise(resolve => setTimeout(resolve, 30))
 
     expect(clearBundleCache).toHaveBeenCalled()
@@ -305,7 +298,6 @@ describe('watchMode configuration and execution', () => {
       close: vi.fn().mockResolvedValue(undefined),
     })
 
-    // First compilation will pause on compileXML until resolved
     vi.mocked(compileXML).mockImplementationOnce(() => {
       return new Promise((resolve) => {
         finishFirstXml = resolve
@@ -320,19 +312,15 @@ describe('watchMode configuration and execution', () => {
 
     const watcher = watchMode(options)
 
-    // First change triggers in-flight compilation
     eventHandler('change', './src/theme.scss')
     await new Promise(resolve => setTimeout(resolve, 20))
 
     expect(compileStyle).toHaveBeenCalledTimes(1)
 
-    // While first compilation is in progress, second change arrives
     eventHandler('change', './src/theme.scss')
 
-    // Finish first compilation
     finishFirstXml()
 
-    // Wait for debounce and execution of pending rerun
     await new Promise(resolve => setTimeout(resolve, 35))
 
     expect(compileStyle).toHaveBeenCalledTimes(2)

@@ -248,7 +248,6 @@ describe('css compilation pipeline', () => {
     const cssFile = path.join(outDir.dir, 'css', 'nesting.css')
     const cssContent = fs.readFileSync(cssFile, 'utf8')
 
-    // IE11 target should un-nest the rule into .parent .child
     expect(cssContent).toContain('.parent .child')
   })
 

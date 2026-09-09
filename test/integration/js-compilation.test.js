@@ -241,7 +241,6 @@ describe('js compilation pipeline', () => {
     expect(content).toContain('UP')
     expect(content).toContain('DOWN')
     expect(content).toContain('Moved ')
-    // Type annotations should be stripped
     expect(content).not.toContain(': Config')
   })
 

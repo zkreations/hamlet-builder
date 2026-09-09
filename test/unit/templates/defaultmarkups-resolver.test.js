@@ -61,11 +61,9 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
 
       const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
-      // Count occurrences of <b:defaultmarkups>
       const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
       expect(matches.length).toBe(1)
 
-      // The consolidated block is inside #top, not inside #bottom
       const topPart = output.slice(output.indexOf('<div id=\'top\'>'), output.indexOf('<div id=\'middle\'>'))
       expect(topPart).toContain('<b:defaultmarkups>')
       expect(topPart).toContain('<h1>Site Title</h1>')
@@ -89,7 +87,6 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
       const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
       expect(output).toContain('<h1>Only Title</h1>')
-      // Native Header includables: behindImageStyle, description, image, title
       expect(output).toContain('<b:includable id=\'behindImageStyle\'/>')
       expect(output).toContain('<b:includable id=\'description\'/>')
       expect(output).toContain('<b:includable id=\'image\'/>')
@@ -158,12 +155,10 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
 
       const output = processTemplate(input)
 
-      // Both blocks are preserved
       const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
       expect(matches.length).toBe(2)
       expect(output).toContain('Version A')
       expect(output).toContain('Version B')
-      // h:resolveMarkups is removed from <html>
       expect(output).not.toContain('h:resolveMarkups')
     })
 
@@ -296,7 +291,6 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
       const input = `<html><body>
-        <!-- Header defaultmarkups (L330) -->
         <b:defaultmarkups>
           <b:defaultmarkup type='All'>
             <b:includable id='main'/>
@@ -309,7 +303,6 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
 
         <b:section id='main-section'/>
 
-        <!-- Footer defaultmarkups (L2011) overriding All -->
         <b:defaultmarkups>
           <b:defaultmarkup type='All'>
             <b:includable id='main'>
@@ -324,15 +317,12 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
 
       const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
-      // Exactly one <b:defaultmarkups> block
       const count = [...output.matchAll(/<b:defaultmarkups>/g)].length
       expect(count).toBe(1)
 
-      // The active 'All.main' is the overridden footer version
       expect(output).toContain('<div class=\'widget-content\'>')
       expect(output).toContain('<b:include name=\'content\'/>')
 
-      // Common is retained
       expect(output).toContain('<b:defaultmarkup type=\'Common\'>')
       expect(output).toContain('Article')
 
@@ -371,7 +361,6 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
 
       const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
-      // Base indent is 4 spaces
       expect(output).toContain('    <b:defaultmarkups>')
       expect(output).toContain('      <b:defaultmarkup type=\'All\'>')
       expect(output).toContain('        <b:includable id=\'main\' var=\'this\'>')
@@ -404,13 +393,11 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
 
       const output = processTemplate(input)
 
-      // Both blocks are preserved where authored
       const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
       expect(matches.length).toBe(2)
       expect(output).toContain('<h1>Site Title</h1>')
       expect(output).toContain('<p>Site Desc</p>')
 
-      // The first block STILL receives native Blogger neutralizations
       expect(output).toContain('<b:defaultmarkup type=\'All\'>')
       expect(output).toContain('<b:includable id=\'main\'/>')
     })

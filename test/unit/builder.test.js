@@ -49,8 +49,6 @@ describe('builder orchestrator', () => {
     expect(compileJS).toHaveBeenCalledWith(options)
     expect(compileStyle).toHaveBeenCalledWith(options)
     expect(compileXML).toHaveBeenCalledWith(options)
-
-    // XML must only be compiled after both JS and Style finish
     expect(callOrder.indexOf('xml')).toBeGreaterThan(callOrder.indexOf('js'))
     expect(callOrder.indexOf('xml')).toBeGreaterThan(callOrder.indexOf('style'))
   })

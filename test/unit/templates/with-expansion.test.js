@@ -42,11 +42,9 @@ describe('multi-variable <b:with> expansion (Fase 2)', () => {
     expect(output).toContain('<b:with value=\'[ "content.com/img/a/" ]\' var=\'servers\'>')
     expect(output).toContain('<img expr:src=\'data:image\'/>')
 
-    // Verify 3 matching closing tags
     const closeCount = (output.match(/<\/b:with>/g) || []).length
     expect(closeCount).toBe(3)
 
-    // Verify order of open tags
     const sourceIdx = output.indexOf('var=\'source\'')
     const imageIdx = output.indexOf('var=\'image\'')
     const serversIdx = output.indexOf('var=\'servers\'')
@@ -85,7 +83,6 @@ describe('multi-variable <b:with> expansion (Fase 2)', () => {
     expect(output).toContain('<b:with value=\'3\' var=\'inner\'>')
     expect(output).toContain('<span>nested</span>')
 
-    // 2 for outer + 1 for inner = 3 closing tags
     expect((output.match(/<\/b:with>/g) || []).length).toBe(3)
   })
 
@@ -112,11 +109,9 @@ describe('multi-variable <b:with> expansion (Fase 2)', () => {
     `
     const output = processTemplate(template)
 
-    // Check with expansion
     expect(output).toContain('<b:with value=\'data:src\' var=\'source\'>')
     expect(output).toContain('<b:with value=\'resizeImage(data:source, 40)\' var=\'avatar\'>')
 
-    // Check include attributes expansion from Fase 1 still works seamlessly together
     expect(output).toContain('<b:include name=\'@avatar\' data=\'{ src: data:avatar, loading: "lazy" }\'/>')
   })
 

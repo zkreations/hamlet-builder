@@ -36,12 +36,10 @@ describe('blogger Linter and Static Diagnostics (Phase 8)', () => {
     })
 
     it('rejects unsupported or modern color formats that break Blogger', () => {
-      // Hex with alpha is NOT supported in Blogger
       expect(isValidBloggerColor('#ffffffff')).toBe(false)
       expect(isValidBloggerColor('#ffffff00')).toBe(false)
       expect(isValidBloggerColor('#ffff')).toBe(false)
 
-      // Modern CSS functions and modern syntax are NOT supported
       expect(isValidBloggerColor('hsl(0, 100%, 50%)')).toBe(false)
       expect(isValidBloggerColor('oklch(0.5 0.2 180)')).toBe(false)
       expect(isValidBloggerColor('rgb(255 255 255 / 0.5)')).toBe(false)

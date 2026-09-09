@@ -144,7 +144,6 @@ describe('partials analyzer', () => {
         fs.writeFileSync(path.join(widgetsDir, '_widgetA.hbs'), '<div>A</div>')
         fs.writeFileSync(path.join(widgetsDir, '_widgetB.hbs'), '<div>B</div>')
         fs.writeFileSync(path.join(widgetsDir, '_widgetC.hbs'), '<div>C</div>')
-        // Only the folder is referenced, none of the individual partials directly
         fs.writeFileSync(path.join(tmp.dir, 'theme.xml'), '<html>{{> folder.widgets}}</html>')
 
         const result = await analyzePartials({ input: tmp.dir })
@@ -172,7 +171,6 @@ describe('partials analyzer', () => {
         fs.mkdirSync(cardsDir)
         fs.writeFileSync(path.join(cardsDir, '_cardA.hbs'), '<div>Card A</div>')
         fs.writeFileSync(path.join(cardsDir, '_cardB.hbs'), '<div>Card B</div>')
-        // Template references nothing
         fs.writeFileSync(path.join(tmp.dir, 'theme.xml'), '<html><body>Hello</body></html>')
 
         const result = await analyzePartials({ input: tmp.dir })
@@ -204,18 +202,15 @@ describe('partials analyzer', () => {
         fs.writeFileSync(path.join(cardsDir, '_cardA.hbs'), '<div>Card A</div>')
         fs.writeFileSync(path.join(cardsDir, '_cardB.hbs'), '<div>Card B</div>')
 
-        // folder.nav is referenced (indirectly using item and menu), and cardA is directly referenced
         fs.writeFileSync(path.join(tmp.dir, 'theme.xml'), '<html>{{> folder.nav}}{{> cardA}}</html>')
 
         const result = await analyzePartials({ input: tmp.dir })
 
-        // Used
         expect(result.refs.has('folder.nav')).toBe(true)
         expect(result.refs.has('item')).toBe(true)
         expect(result.refs.has('menu')).toBe(true)
         expect(result.refs.has('cardA')).toBe(true)
 
-        // Unused
         expect(result.refs.has('folder.cards')).toBe(false)
         expect(result.refs.has('cardB')).toBe(false)
 

@@ -78,7 +78,7 @@ describe('configuration loader', () => {
     expect(configs.hamlet.recompileOnAnyChange).toBe(true)
     expect(configs.hamlet.resolveMarkups).toBe(true)
     expect(configs.hamlet.mergeMarkups).toBe(false)
-    expect(configs.hamlet.plugins).toEqual([]) // Preserved from fallback
+    expect(configs.hamlet.plugins).toEqual([])
     expect(typeof configs.hamlet.helpers.custom).toBe('function')
     expect(configs.theme).toEqual({ siteName: 'Hamlet Test' })
   })
@@ -97,7 +97,6 @@ describe('configuration loader', () => {
 
     const root = '/my/project'
 
-    // Supported configs in root
     expect(isConfigFile('hamlet.config.js', root)).toBe(true)
     expect(isConfigFile('theme.config.mjs', root)).toBe(true)
     expect(isConfigFile('postcss.config.cjs', root)).toBe(true)
@@ -106,14 +105,11 @@ describe('configuration loader', () => {
     expect(isConfigFile('.themerc', root)).toBe(true)
     expect(isConfigFile('package.json', root)).toBe(true)
 
-    // Supported configs in .config/
     expect(isConfigFile('.config/hamletrc.js', root)).toBe(true)
     expect(isConfigFile('.config/themerc.json', root)).toBe(true)
 
-    // Absolute paths
     expect(isConfigFile('/my/project/hamlet.config.js', root)).toBe(true)
 
-    // Non-config files
     expect(isConfigFile('src/index.js', root)).toBe(false)
     expect(isConfigFile('src/hamlet.config.js', root)).toBe(false)
     expect(isConfigFile('styles/main.scss', root)).toBe(false)

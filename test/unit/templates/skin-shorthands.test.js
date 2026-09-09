@@ -201,7 +201,7 @@ describe('skin Variable Shorthands (Phase 7)', () => {
       `
       const vars = collectDeclaredSkinVariables(template)
 
-      expect(vars.size).toBe(7) // 3 dotted names (raw + normalized) + 1 undotted name
+      expect(vars.size).toBe(7)
       expect(vars.get('c.uiScheme')).toEqual({
         name: 'c.uiScheme',
         normalizedName: 'c_uiScheme',

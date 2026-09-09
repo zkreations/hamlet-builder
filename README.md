@@ -1,439 +1,352 @@
-# Hamlet-builder
+# Hamlet Builder
 
 <img src="https://raw.githubusercontent.com/zkreations/hamlet-builder/main/hamlet-logo.png" align="left" alt="Hamlet Builder" />
 
-[![V](https://img.shields.io/npm/v/hamlet-builder)](https://www.npmjs.com/package/hamlet-builder) [![L](https://img.shields.io/npm/l/hamlet-builder)](LICENSE)
+[![V](https://img.shields.io/npm/v/hamlet-builder)](https://www.npmjs.com/package/hamlet-builder) [![L](https://img.shields.io/npm/l/hamlet-builder)](LICENSE) [![Node](https://img.shields.io/node/v/hamlet-builder)](package.json)
 
+Compiler for Blogger theme development. Powers the official [Hamlet](https://github.com/zkreations/hamlet/) theme and any Blogger themes derived from it.
 
-This package makes it easy to build a Blogger Template. It is used to build the Blogger template [Hamlet](https://github.com/zkreations/hamlet/), and all Blogger themes derived from it.
+---
 
 ## Features
 
-- Use Handlebars to compile HBS and XML files
-- Use Rollup to bundle JS files
-- Use PostCSS to process CSS files
-- Minify CSS and JS files using LightningCSS and Terser (Can be disabled)
-- You can use the Blogger language with some additional facilities
-- You can use configuration files to customize the build process (Optional)
-- Fast and easy to use
+- **Template compilation**: Compiles Handlebars (`.hbs`, `.handlebars`) and XML (`.xml`) templates into Blogger XML.
+- **JavaScript & TypeScript bundling**: Bundles `.js`, `.mjs`, `.cjs`, `.ts`, and `.tsx` scripts via Rollup and esbuild.
+- **CSS processing**: Compiles SCSS, SASS, and CSS using Sass, PostCSS, and LightningCSS with `browserslist` target resolution.
+- **Source maps**: Generated for styles and scripts via the `-s, --sourcemap` flag or configuration.
+- **Minification**: LightningCSS (CSS) and Terser (JS), configurable globally or per asset type.
+- **Project inspection**: `--inspect` command outputs a report of partials, helper counts, unused partials, and name collision warnings.
+- **Blogger normalizations**:
+  - Self-closes void HTML tags (`<meta>`, `<link>`, `<img>`, etc.) for XML compliance.
+  - Injects standard root attributes into `<html>`.
+  - Collapses multiline Blogger expressions (`expr:*`, `cond`, `values`, `value`) onto single lines, preserving CDATA and script/style blocks.
+  - Expands simplified `<Variable>` and `<b:widget>` markup.
+- **Asset helpers**: Embed file assets with `asset`, or use `assetCss` and `assetJs` to switch between development and minified production bundles.
+- **Built-in partials and skin variables**: Ships with Hamlet functions and overrides, and converts theme skin `<Group>` variables into CSS custom properties via `hamlet.skinVars`.
+- **Plugin system**: Add namespaced helpers, partials, and data context via plugins.
+- **Error reporting**: File paths, line and column positions, and partial inclusion stack traces on compilation errors.
 
-## Install
+---
+
+## Requirements
+
+- Node.js `>= 22.0.0`
+
+---
+
+## Installation
 
 ```bash
-npm install hamlet-builder
+npm install hamlet-builder --save-dev
 ```
 
-## Flags
-
-| Flag              | Short Flag | Description                         | Default |
-| ----------------- | ---------- | ----------------------------------- | ------- |
-| `--input`         | `-i`       | Input path                          | `src`   |
-| `--output`        | `-o`       | Output path                         | `dist`  |
-| `--mode`          | `-m`       | Set mode: development or production | `development` |
-| `--watch`         | `-w`       | Watches the source files and rebuilds on changes |  |
-| `--info`          | `-I`       | Display information about the project |  |
-| `--no-minify`     | `-n`       | Disable all minification |  |
-| `--no-minify-css` |            | Disable minification for CSS |  |
-| `--no-minify-js`  |            | Disable minification for JS |  |
-
-## Usage
-
-Add some scripts to your `package.json`, a good way to do it is the following:
-
-```json
-{
-  "scripts": {
-    "dev": "hamlet --mode development --watch",
-    "start": "hamlet --mode production --watch",
-    "build": "hamlet --mode production"
-  }
-}
+```bash
+pnpm add -D hamlet-builder
+# or
+yarn add -D hamlet-builder
 ```
 
 > [!NOTE]
 > You can invoke the CLI using either `hamlet` or `hamlet-builder`.
 
-Then you can run the following commands:
+---
 
-```bash
-npm run start
-npm run build
+## CLI Flags
+
+| Flag | Short Flag | Description | Default |
+| --- | --- | --- | --- |
+| `--input <path>` | `-i` | Path to source directory | `./src` |
+| `--output <path>` | `-o` | Path to build output directory | `./dist` |
+| `--mode <mode>` | `-m` | Set build mode: `development` or `production` | `development` |
+| `--watch` | `-w` | Watch source files and recompile on changes | `false` |
+| `--inspect` | | Inspect project partials, configurations, and diagnostics | `false` |
+| `--info` | `-I` | Alias for `--inspect` | `false` |
+| `--sourcemap` | `-s` | Generate source maps for CSS and JavaScript files | `false` |
+| `--no-minify` | `-n` | Disable minification for all assets | `false` |
+| `--no-minify-css` | | Disable minification for CSS only | `false` |
+| `--no-minify-js` | | Disable minification for JavaScript only | `false` |
+
+---
+
+## Usage
+
+Add compilation scripts to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev": "hamlet --mode development --watch",
+    "build": "hamlet --mode production",
+    "build:sourcemap": "hamlet --mode production --sourcemap",
+    "inspect": "hamlet --inspect"
+  }
+}
 ```
 
-You can also use the CLI directly. For example, to start it in development mode with automatic file watching:
+```bash
+npm run dev      # Development mode with file watching
+npm run build    # Production build
+npm run inspect  # Project diagnostics
+```
+
+You can also run the CLI directly using `npx`:
 
 ```bash
 npx hamlet --mode development --watch
 ```
 
-## Configuration Files
+---
 
-### Hamlet
+## Project Structure & Conventions
 
-Configuration file for Hamlet plugins, custom helpers, and build options. You can add a configuration file to the root of your project by creating a `.hamletrc.js` or `hamlet.config.js` file, or by placing a `hamletrc.js` file inside a `.config/` folder. You can also use `.cjs` or `.mjs` extensions.
+Hamlet Builder scans the source folder (`./src` by default) for files matching these conventions:
 
-#### Basic configuration
-
-```js
-import testPlugin from '@hamlet/test-plugin'
-
-export default {
-  recompileOnAnyChange: false,
-  helpers: {
-    sayHello: name => `Hello, ${name}!`,
-  },
-  plugins: [
-    testPlugin(),
-  ]
-}
+```bash
+src/
+├── css/
+│   ├── _variables.scss       # Ignored as entry (partial due to '_')
+│   ├── _mixins.scss          # Ignored as entry (partial due to '_')
+│   └── main.scss             # Compiled to dist/css/main.css & main.min.css
+├── js/
+│   ├── utils.ts              # Ignored as entry (module imported by bundle)
+│   ├── component.tsx         # Ignored as entry (module imported by bundle)
+│   └── app.bundle.ts         # Compiled to dist/js/app.js & app.min.js
+└── templates/
+    ├── partials/
+    │   ├── _header.hbs       # Registered partial: {{> header}}
+    │   └── _footer.hbs       # Registered partial: {{> footer}}
+    └── theme.xml             # Compiled to dist/theme.xml
 ```
 
-#### Options
+### 1. Styles (`scss`, `sass`, `css`)
 
-- **`helpers`** — Object with custom Handlebars helpers. These helpers don't require namespacing and can override built-in helpers if needed. Use for local project helpers only; for distributable helpers, use the `plugins` system with namespacing.
-- **`plugins`** — Array of plugin factory functions. Each plugin should return an object with `partials` and/or `helpers` keys. Namespaced helpers/partials from plugins cannot override built-in or previously registered ones (will be skipped with a warning).
-- **`recompileOnAnyChange`** — Boolean (default: `false`). If `true`, CSS is recompiled whenever any file changes (useful for class-based CSS frameworks like Tailwind that generate styles dynamically).
+- Files whose name does not begin with `_` are treated as entry points.
+- Entry files are compiled through Sass, PostCSS, and LightningCSS and output to `dist/css/[name].css`.
+- In production, an additional `[name].min.css` is generated.
+- Files prefixed with `_` are treated as partials and are not compiled directly.
 
-#### Using context in configuration
+> [!TIP]
+> PostCSS plugins are applied after Sass compilation, so you can combine PostCSS plugins (like Autoprefixer or Tailwind CSS) with Sass.
 
-If your configuration needs access to paths or other context information, export a function instead of an object:
+### 2. Scripts (`js`, `mjs`, `cjs`, `ts`, `tsx`)
 
-```js
-export default ({ paths }) => ({
-  recompileOnAnyChange: true,
-  helpers: {
-    projectRoot: () => paths.root,
-  },
-  plugins: [
-    // can use paths.src, paths.dist, etc.
-  ]
-})
+- Only files ending with `.bundle.@(js|mjs|cjs|ts|tsx)` are treated as entry points (e.g., `app.bundle.ts`).
+- Non-bundle files are treated as modules and can be imported with standard ES import syntax.
+- TypeScript and TSX are supported via `esbuild` without extra configuration.
+- The `.bundle` suffix is stripped in the output, producing `dist/js/[name].js` and `dist/js/[name].min.js`.
+- Bundles are compiled as IIFE scripts. The function name is derived from the entry file name.
+
+### 3. Templates (`xml`, `hbs`, `handlebars`)
+
+- Files not prefixed with `_` are compiled into Blogger themes (e.g., `theme.xml` compiles to `dist/theme.xml`).
+- Files prefixed with `_` are registered as Handlebars partials using their filename without the underscore and extension:
+  - `src/templates/_header.hbs` &rarr; `{{> header}}`
+  - `src/components/_card.xml` &rarr; `{{> card}}`
+
+#### Folder Partials
+
+When partials are organized in a folder, Hamlet Builder generates a combined partial for that folder:
+
+```handlebars
+{{> folder.FOLDER_NAME}}
 ```
 
-Available context properties:
-- **`paths.root`** — Absolute path to the project root
-- **`paths.src`** — Absolute path to the source directory (input)
-- **`paths.dist`** — Absolute path to the output directory (dist)
+For example, if you have `src/templates/widgets/_recent.hbs` and `src/templates/widgets/_popular.hbs`, calling `{{> folder.widgets}}` will include all partials in that folder in alphabetical order.
 
-#### Plugin development
+---
 
-A plugin must export a default function that returns an object with `namespace` and optionally `partials`, `helpers`, and/or `context`. If a plugin tries to register a name that already exists (a built-in helper/partial, or one from another plugin), it will be skipped with a console warning instead of overwriting it.
+## Handlebars Helpers
 
-The `context` key is an optional plain object with data to expose to all Handlebars templates. Hamlet merges it into the template context under the plugin's namespace key, so there are no collisions with the global context or other plugins:
+### Asset Helpers
 
-```js
-export default function myPlugin(options = {}) {
-  return {
-    namespace: 'icons',
-    context: {
-      spriteUrl: options.spriteUrl ?? '/icons.svg',
-    },
-    partials: {},
-  }
-}
+#### `{{asset "<path>"}}`
+
+Inlines the raw text content of a file into your template at build time. Supports path resolution relative to the project root.
+
+```handlebars
+<style>
+  {{asset "dist/css/main.css"}}
+</style>
+<script>
+  {{asset "dist/js/main.js"}}
+</script>
 ```
 
-In any template, the plugin context is accessible as `{{<namespace>.<key>}}`:
+Files from `node_modules` can be referenced using the `~` prefix:
 
-```hbs
-{{icons.spriteUrl}}
+```handlebars
+<style>
+  {{asset "~/normalize.css/normalize.css"}}
+</style>
 ```
 
 > [!IMPORTANT]
-> Plugins execute arbitrary Node.js code. Treat them as you would any other npm dependency—only install plugins from trusted sources.
+> `asset` blocks path traversal outside the project directory, restricts allowed file extensions (`.css`, `.js`, `.html`, `.xml`, `.svg`, `.md`, `.txt`, `.json`, `.yaml`, `.yml`, `.toml`), and guards against circular references.
 
-> [!TIP]
-> Want to build your own plugin? Check out the official starter: [hamlet-plugin-template](https://github.com/zkreations/hamlet-plugin-template).
+#### `{{assetCss "<name>"}}`
 
-### Rollup
+Inlines a compiled CSS file from the output directory. Resolves to the unminified file in development mode and the minified file in production:
 
-Add a `.rolluprc.js`, `rollup.config.js` or create a folder `.config` with a file `rolluprc.js`. You can also use the extension `.cjs` or `.mjs`. Here is an example of configuration:
-
-```js
-import terser from '@rollup/plugin-terser'
-
-export default {
-  plugins: [
-    terser()
-  ]
-}
-```
-
-### PostCSS
-
-Add a `.postcssrc.js`, `postcss.config.js` or create a folder `.config` with a file `postcssrc.js`. You can also use the extension `.cjs` or `.mjs`. Here is an example of configuration:
-
-```js
-import autoprefixer from 'autoprefixer'
-import cssnanoPlugin from 'cssnano'
-
-export default {
-  plugins: [
-    autoprefixer(),
-    cssnanoPlugin()
-  ]
-}
-```
-
-### Theme
-
-Add a `.themerc`, `.themerc.json`, `theme.config.json` or create a folder `.config` with a file `themerc.json`. Also you can add the information in the `package.json` file using the `theme` key. Here is an example of configuration:
-
-```json
-{
-  "theme": {
-    "name": "Hamlet",
-    "author": "zkreations"
-  }
-}
-```
-
-The data will be the context of the Handlebars templates, so you can access them as follows:
+- **Development**: Inlines `dist/css/[name].css`
+- **Production**: Inlines `dist/css/[name].min.css`
 
 ```handlebars
-{{name}}
-{{author}}
+<style>
+  {{assetCss "main"}}
+</style>
 ```
 
-In addition to theme data, the following variables are always available in every template:
+`"main"` and `"main.css"` are interchangeable.
 
-| Variable | Type | Description |
-| -------- | ---- | ----------- |
-| `defaultmarkups` | object | Blogger widget markup definitions used by `{{> hamlet.defaultmarkups}}` |
-| `development` | boolean | `true` when `--mode development`, `false` otherwise |
+#### `{{assetJs "<name>"}}`
 
-Example usage of the `development` variable:
+Inlines a compiled JavaScript bundle from the output directory:
+
+- **Development**: Inlines `dist/js/[name].js`
+- **Production**: Inlines `dist/js/[name].min.js`
 
 ```handlebars
-{{#if development}}
-  <!-- debug info only visible in development mode -->
-{{/if}}
+<script>
+  {{assetJs "main"}}
+</script>
 ```
 
-## Structure
+`"main"` and `"main.js"` are interchangeable.
 
-The user is free to organize the files and folders as they wish, as the system will search for `scss`, `sass`, `css`, `js`, `hbs` and `xml` files to compile them as needed.
+---
 
+### Logic & Comparison Helpers
 
-### Compile styles
+| Helper | Description | Example |
+| --- | --- | --- |
+| `eq` | Strict equality (`===`) | `{{#if (eq view.type "post")}}...{{/if}}` |
+| `ne` | Strict inequality (`!==`) | `{{#if (ne view.type "index")}}...{{/if}}` |
+| `lt` | Less than (`<`) | `{{#if (lt count 10)}}...{{/if}}` |
+| `gt` | Greater than (`>`) | `{{#if (gt posts.length 0)}}...{{/if}}` |
+| `and` | Logical AND (`&&`) | `{{#if (and isPost hasThumbnail)}}...{{/if}}` |
+| `or` | Logical OR (`\|\|`) | `{{#if (or isPost isPage)}}...{{/if}}` |
+| `not` | Logical NOT (`!`) | `{{#if (not isError)}}...{{/if}}` |
 
-The system will search for `sass`, `scss` and `css` files to compile them. If the file name starts with an underscore `_`, it will be considered a partial file, for example:
+---
 
-```bash
-├── src
-│   ├── scss
-│   │   ├── _module.scss
-│   │   └── main.scss
-```
+### String & Array Helpers
 
-Another example with `css` files:
+| Helper | Description | Example |
+| --- | --- | --- |
+| `concat` | Concatenates multiple strings | `{{concat "prefix-" category "-suffix"}}` |
+| `includes` | Checks if a string contains a substring | `{{#if (includes title "Hamlet")}}...{{/if}}` |
+| `capitalize` | Capitalizes the first letter of a string | `{{capitalize "author"}}` &rarr; `Author` |
+| `first` | Returns the first element of an array | `{{first labels}}` |
+| `last` | Returns the last element of an array | `{{last labels}}` |
+| `currentYear` | Outputs the current 4-digit year | `&copy; {{currentYear}} My Site` |
 
-```bash
-├── src
-│   ├── css
-│   │   ├── _module.css
-│   │   └── main.css
-```
+---
 
-The file `main.scss` or `main.css` will be the main file that will be compiled and saved in the default output folder or the one specified by the user.
+### Control Flow (`switch`, `case`, `default`)
 
-
-> [!TIP]
-> The PostCSS plugins will also be applied to the `sass` and `scss` files after being compiled.
-
-
-### Compile scripts
-
-The system will search for `js` files, however only those that end with `bundle.js` will be considered as main files, for example:
-
-```bash
-├── src
-│   ├── js
-│   │   ├── module.js
-│   │   └── main.bundle.js
-```
-
-The file `main.bundle.js` will be the main file, while the other files will be considered as modules. Also, when the main file is compiled, "bundle" is removed from the file name, so the resulting file will be `main.js`.
-
-> [!NOTE]
-> The name of the main file will be used as the name of the function generated by Rollup.
-
-
-### Compile templates
-
-The system will search for `xml`, `hbs` and `handlebars` files to compile them. If the file name starts with an underscore `_`, it will be considered a partial file, for example:
-
-```bash
-├── src
-│   ├── templates
-│   │   ├── _module.hbs
-│   │   └── main.hbs
-```
-
-Another example with `xml` files:
-
-```bash
-├── src
-│   ├── templates
-│   │   ├── _module.xml
-│   │   └── main.xml
-```
-
-The file `main.hbs` or `main.xml` will be the main file that will be compiled and saved in the default output folder or the one specified by the user.
-
-You can create any number of partials and organize them as you wish, just make sure to use unique names, when a partial is repeated you will receive a warning message. To include a partial use the following syntax:
-
-```handlebars
-{{> module}}
-```
-
-> [!TIP]
-> If you have a folder with partials that you frequently create or delete, and they are also called together in a main file, you can use the `folder.` prefix to include all the partials from that folder, for example: `{{> folder.FOLDER_NAME}}`
-
-#### Helpers
-
-These helpers are defined by default in the system, and you can use them in your templates. You can add custom helpers in your `hamlet.config.js`:
-
-```js
-export default {
-  helpers: {
-    myHelper: value => value.toUpperCase(),
-  }
-}
-```
-
-Built-in helpers available:
-
-| Helper | Description |
-| ------ | ----------- |
-| `asset` | Include the content of the file in the template |
-| `currentYear` | Include the current year |
-| `eq` | Check if two values are equal (`===`) |
-| `ne` | Check if two values are not equal (`!==`) |
-| `lt` | Check if the first value is less than the second |
-| `gt` | Check if the first value is greater than the second |
-| `and` | Logical AND between two values |
-| `or` | Logical OR between two values |
-| `not` | Negate a value |
-| `concat` | Concatenate multiple strings |
-| `includes` | Check if a string contains a substring |
-| `capitalize` | Capitalize the first letter of a string |
-| `first` | Get the first element of an array |
-| `last` | Get the last element of an array |
-| `switch` / `case` / `default` | Block helpers to create switch-like conditional logic |
-
-Example of use the `asset` helper:
-
-```handlebars
-{{asset "dist/css/main.css"}}
-{{asset "dist/js/main.js"}}
-```
-
-If the file is in the `node_modules` folder, you can omit the folder and use `~` to reference it:
-
-```handlebars
-{{asset "~/tooltips/main.css"}}
-```
-
-> [!IMPORTANT]
-> Remember to use the `<style>` and `<script>` tags to include the CSS and JS files in your template.
-
-Example of use the `currentYear` helper:
-
-```handlebars
-{{currentYear}}
-```
-
-Example of use the comparison and logic helpers:
-
-```handlebars
-{{#if (eq view.type "post")}}
-  This is a post
-{{/if}}
-
-{{#if (and isPost hasThumbnail)}}
-  This post has a thumbnail
-{{/if}}
-```
-
-Example of use the `switch` / `case` / `default` helpers:
+Multi-branch conditional blocks with nested switch support:
 
 ```handlebars
 {{#switch view.type}}
-  {{#case "post"}}This is a post{{/case}}
-  {{#case "page"}}This is a page{{/case}}
-  {{#default}}Unknown type{{/default}}
+  {{#case "item"}}
+    <!-- Single post layout -->
+  {{/case}}
+  {{#case "page"}}
+    <!-- Static page layout -->
+  {{/case}}
+  {{#default}}
+    <!-- Index / Archive layout -->
+  {{/default}}
 {{/switch}}
 ```
 
-#### Partials
+---
 
-There are predefined partials that you can use in your templates. These are identified with the prefix `hamlet.`. To learn more, you can refer to [the documentation on default partials](src/README.md). Below is a table with the available partials:
+## Built-in Hamlet Partials
 
-| Partial | Description |
-| ------- | ----------- |
-| `hamlet.defaultmarkups` | Override: suppress Blogger's auto-generated widget inclusions |
-| `hamlet.overrides` | Include all override partials at once |
-| `hamlet.functions` | Include all function partials at once |
-| `hamlet.ads` | Function: Create AdSense ads |
-| `hamlet.adsense` | Function: AdSense async script |
-| `hamlet.attr` | Function: Add or remove multiple attributes |
-| `hamlet.avatar` | Function: Replace the default avatar image with a custom image |
-| `hamlet.contrast` | Function: Evaluate color brightness and expose contrast state |
-| `hamlet.image` | Function: Create custom image tag |
-| `hamlet.kind` | Function: Add classes to body tag based on the current view |
-| `hamlet.menu` | Function: Create a menu from a list of links |
-| `hamlet.meta` | Function: Generate meta tags |
-| `hamlet.picture` | Function: Create custom picture tag |
-| `hamlet.snippet` | Function: Create a snippet of a string |
-| `hamlet.skinVars` | Generated: CSS variables derived from skin `Group` variables at build time |
+Partials prefixed with `hamlet.` are included with the builder.
 
-`hamlet.functions` includes all function partials in a single call, which is equivalent to including each of the function partials individually. Use it at the top of your template to make all functions available:
+| Partial | Type | Description |
+| --- | --- | --- |
+| `hamlet.functions` | Includable Group | Injects all Hamlet function includables |
+| `hamlet.overrides` | Includable Group | Injects all default markup overrides |
+| `hamlet.defaultmarkups` | Override | Suppresses Blogger's auto-generated default widget markups |
+| `hamlet.meta` | Function | SEO metadata, Open Graph, Twitter Cards, and canonical URLs |
+| `hamlet.picture` | Function | Responsive `<picture>` tag with Blogger thumbnail sizing |
+| `hamlet.image` | Function | Responsive `<img>` tag with srcset and Blogger resize parameters |
+| `hamlet.avatar` | Function | User avatar with fallback image and resizing |
+| `hamlet.snippet` | Function | Text snippet with configurable length and ellipsis |
+| `hamlet.menu` | Function | Nested navigation menu from Blogger LinkList widgets |
+| `hamlet.kind` | Function | Injects context classes into `<body>` based on the active view |
+| `hamlet.contrast` | Function | Calculates brightness contrast (`light` / `dark`) from skin variables |
+| `hamlet.attr` | Function | Adds or removes multiple HTML attributes programmatically |
+| `hamlet.adsense` | Function | Async AdSense script loader |
+| `hamlet.ads` | Function | Responsive AdSense ad slot |
+| `hamlet.skinVars` | Generated | CSS custom properties derived from theme `<Group>` skin variables |
 
-```handlebars
-{{> hamlet.functions}}
-```
+> [!TIP]
+> For complete parameter lists and usage examples, see [src/README.md](src/README.md).
 
-`hamlet.skinVars` is not a callable function — it is automatically generated at build time by scanning `<Group>` sections in your source files and converting `color`, `background`, and `font` type variables into CSS custom properties. No parameters are accepted.
+### Theme Skin Variables (`hamlet.skinVars`)
 
-## Additional features
-
-When writing your templates, you will be able to use the Blogger language you already know, with some additional facilities.
-
-
-### Root
-
-You don't need to add the attributes to the root tag:
+Hamlet Builder extracts `<Group>` skin variable declarations from your source files:
 
 ```xml
-<html class='test'>
+<Group description="Theme Colors">
+  <Variable name="theme.primary" type="color" default="#0066cc"/>
+</Group>
 ```
 
-The above will compile to:
+Invoking `{{> hamlet.skinVars}}` outputs CSS custom properties:
+
+```css
+/* Theme Colors Group */
+--theme-primary: $(theme.primary);
+```
+
+For font variables, it generates both the font rule and the family rule (`--var-name` and `--var-name-family`).
+
+---
+
+## Blogger Normalizations
+
+Hamlet Builder handles several repetitive requirements of Blogger XML automatically.
+
+### 1. Void Tag Self-Closing
+
+Standard HTML void tags (`<meta>`, `<link>`, `<img>`, `<input>`, `<br>`, `<hr>`, `<area>`, `<base>`, `<col>`, `<embed>`, `<param>`, `<source>`, `<track>`, `<wbr>`) are converted to self-closing XML tags to prevent validation errors when uploading themes to Blogger.
+
+### 2. Root Element Normalization
+
+A simple `<html>` tag:
 
 ```xml
-<html class='test' b:css='false' b:js='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'>
+<html class='theme'>
 ```
 
-### Variables
-
-You can define variables with only the `name` attribute:
+Is expanded to:
 
 ```xml
-<Variable name="test"/>
-<Variable name="example" value="false"/>
+<html class='theme' b:css='false' b:js='false' b:defaultwidgetversion='2' b:layoutsVersion='3' expr:dir='data:blog.languageDirection' expr:lang='data:blog.locale'>
 ```
 
-The above will compile to:
+### 3. Simplified Variables
+
+Declare skin variables concisely:
 
 ```xml
-<Variable name='test' description='test' type='string'/>
-<Variable name='example' description='example' type='string' value='false'/>
+<Variable name="brandColor"/>
 ```
 
-### Widgets
+Compiled output:
 
-In the case of the `widget` tags, no attribute is required, you only need the type:
+```xml
+<Variable name='brandColor' description='brandColor' type='string'/>
+```
+
+### 4. Simplified Widgets
+
+Omit boilerplate from `<b:widget>`:
 
 ```xml
 <b:widget/>
@@ -442,7 +355,7 @@ In the case of the `widget` tags, no attribute is required, you only need the ty
 <b:widget type='Label'/>
 ```
 
-The above will compile to:
+Compiled output:
 
 ```xml
 <b:widget id='HTML1' type='HTML' version='2'/>
@@ -451,42 +364,198 @@ The above will compile to:
 <b:widget id='Label2' type='Label' version='2'/>
 ```
 
-> [!NOTE]
-> When `type` is not specified, or if the specified type is not valid, `HTML` will be used by default.
+If `type` is omitted or invalid, it defaults to `HTML`.
 
+### 5. Multiline Expression Normalization
 
-### Normalize spaces
-
-When you use `b:*` tags you can use spaces or line breaks to improve the clarity of your code, when it is compiled, these spaces will be normalized.
+Line breaks and excess whitespace in Blogger expression attributes (`expr:*`, `cond`, `values`, `value`) are collapsed onto single lines:
 
 ```xml
 <b:include name='@image' data='{
-  src: data:sourceUrl,
-  resize: (data:shrinkToFit
-    ? 500
-    : 1280)
+  src: data:post.featuredImage,
+  resize: (data:isThumbnail ? 320 : 800)
 }'/>
 ```
 
-The above will compile to:
+Compiled output:
 
 ```xml
-<b:include name='@image' data='{ src: data:sourceUrl, resize: (data:shrinkToFit ? 500 : 1280) }'/>
+<b:include name='@image' data='{ src: data:post.featuredImage, resize: (data:isThumbnail ? 320 : 800) }'/>
 ```
 
-## Create your beautiful theme
+CDATA blocks, `<script>`, and `<style>` blocks are preserved as-is.
 
-If you used this repository as a template, please, add a star ⭐ and add the following tags in yours:
+---
 
-- `blogger-hamlet`
-- `blogger-handlebars`
-- `blogger-hbs`
+## Configuration Files
 
-Thanks for using this repository. Happy coding! 🐋
+Hamlet Builder discovers configuration files at the project root or inside a `.config/` directory.
 
-## Supporting
+| Name | Formats | Example Files |
+| --- | --- | --- |
+| **Hamlet** | `.js`, `.mjs`, `.cjs`, `.json` | `hamlet.config.js`, `.hamletrc.js`, `.config/hamletrc.js` |
+| **Theme** | `.json`, `package.json` | `theme.config.json`, `.themerc.json`, `"theme"` field in `package.json` |
+| **PostCSS** | `.js`, `.mjs`, `.cjs`, `.json` | `postcss.config.js`, `.postcssrc.js` |
+| **Rollup** | `.js`, `.mjs`, `.cjs` | `rollup.config.js`, `.rolluprc.js` |
 
-If you want to help me keep this and more related projects always up to date, you can [buy me a coffee](https://ko-fi.com/zkreations) ☕. I will be very grateful 👏.
+---
+
+### Hamlet Configuration (`hamlet.config.js`)
+
+```js
+import myPlugin from 'hamlet-plugin-custom'
+
+export default {
+  // Recompile CSS when any template changes (useful for Tailwind CSS)
+  recompileOnAnyChange: false,
+
+  // Enable sourcemaps for CSS and JS
+  sourcemap: false,
+
+  // Project-level custom Handlebars helpers
+  helpers: {
+    formatPrice: amount => `$${Number(amount).toFixed(2)}`,
+  },
+
+  // Custom options passed to rollup-plugin-esbuild
+  esbuild: {
+    target: 'es2020',
+  },
+
+  // Hamlet plugins
+  plugins: [
+    myPlugin(),
+  ],
+}
+```
+
+#### Dynamic Configuration with Context
+
+Export a function to access project paths:
+
+```js
+export default ({ paths, utils }) => ({
+  recompileOnAnyChange: true,
+  helpers: {
+    assetPath: file => utils.resolve(paths.dist, file),
+  },
+})
+```
+
+Available context parameters:
+- `paths.root`: Absolute path to project root.
+- `paths.src`: Absolute path to input directory.
+- `paths.dist`: Absolute path to output directory.
+- `utils.resolve(...args)`: Path resolution relative to project root.
+
+---
+
+### Theme Configuration (`theme.config.json`)
+
+Data defined in `theme.config.json` (or the `"theme"` field in `package.json`) is merged into the Handlebars template context:
+
+```json
+{
+  "name": "My Blogger Theme",
+  "author": "Daniel",
+  "version": "1.0.0"
+}
+```
+
+In your templates:
+
+```handlebars
+<h1>{{name}}</h1>
+<p>Created by {{author}}</p>
+```
+
+#### Global Template Variables
+
+| Variable | Type | Description |
+| --- | --- | --- |
+| `development` | boolean | `true` when `--mode development`, `false` when `--mode production` |
+| `defaultmarkups` | object | Built-in markup keys used by `{{> hamlet.defaultmarkups}}` |
+
+```handlebars
+{{#if development}}
+  <!-- Developer bar or live-reload scripts -->
+{{/if}}
+```
+
+---
+
+### Plugin Development
+
+A plugin is a factory function returning an object with a unique `namespace`:
+
+```js
+export default function iconsPlugin(options = {}) {
+  return {
+    namespace: 'icons',
+    context: {
+      spritePath: options.spritePath ?? '/assets/icons.svg',
+    },
+    helpers: {
+      iconName: name => `icon-${name}`,
+    },
+    partials: {
+      svg: '<svg><use href="{{icons.spritePath}}#{{name}}"></use></svg>',
+    },
+  }
+}
+```
+
+In any template:
+- Partials: `{{> icons.svg name="search"}}`
+- Context data: `{{icons.spritePath}}`
+
+> [!TIP]
+> Use the official starter template to publish a plugin: [hamlet-plugin-template](https://github.com/zkreations/hamlet-plugin-template).
+
+---
+
+## Project Inspection
+
+```bash
+npx hamlet --inspect
+# or
+npx hamlet -I
+```
+
+Outputs a structured terminal report with:
+- Active configuration: input, output, mode, minification, and recompile flags.
+- Built-in partials: which `hamlet.*` partials are referenced vs. available.
+- Project partials: all detected partials organized by folder, with unused partials flagged.
+- Folder partials: all generated `folder.<name>` partials with member counts.
+- Plugin partials: partials contributed by plugins, grouped by namespace.
+- Registered helpers: counts of built-in and custom helpers.
+- Diagnostics: name collision warnings with exact file paths.
+
+---
+
+## Error Reporting
+
+On compilation failure, Hamlet Builder reports file paths, line and column numbers, and for template errors, the full partial inclusion stack trace:
+
+```text
+[error] The partial "nav_item" could not be found
+  src/templates/partials/_menu.hbs:4:6
+  included from src/templates/partials/_header.hbs:12:4
+  included from src/templates/theme.xml:18:2
+```
+
+---
+
+## Author
+
+Created and maintained by [zkreations](https://github.com/zkreations).
+
+- Website: [zkreations.com](https://www.zkreations.com/)
+- Ko-fi: [ko-fi.com/zkreations](https://ko-fi.com/zkreations)
+
+If you use Hamlet Builder in your themes, consider tagging your repositories with `blogger-hamlet` and `hamlet-builder`
+
+---
 
 ## License
 

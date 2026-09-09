@@ -27,7 +27,7 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
         </b:defaultmarkups>
       </body></html>`
 
-      const output = processTemplate(input)
+      const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
       expect(output).toContain('<div>Version B</div>')
       expect(output).not.toContain('<div>Version A</div>')
@@ -59,7 +59,7 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
         </div>
       </body></html>`
 
-      const output = processTemplate(input)
+      const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
       // Count occurrences of <b:defaultmarkups>
       const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
@@ -86,7 +86,7 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
         </b:defaultmarkups>
       </body></html>`
 
-      const output = processTemplate(input)
+      const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
       expect(output).toContain('<h1>Only Title</h1>')
       // Native Header includables: behindImageStyle, description, image, title
@@ -104,7 +104,7 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
         </b:defaultmarkups>
       </body></html>`
 
-      const output = processTemplate(input)
+      const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
       expect(output).toContain('<b:defaultmarkup type=\'All\'>')
       expect(output).toContain('<b:includable id=\'main\'/>')
@@ -131,7 +131,7 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
         </b:defaultmarkups>
       </body></html>`
 
-      const output = processTemplate(input)
+      const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
       expect(output).toContain('<b:defaultmarkup type=\'Common\'>')
       expect(output).toContain('<b:includable id=\'customNav\'>')
@@ -209,7 +209,7 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
         </b:defaultmarkups>
       </body></html>`
 
-      const output = processTemplate(input, { hamlet: { resolveMarkups: false } })
+      const output = processTemplate(input, { hamlet: { resolveMarkups: false, mergeMarkups: true } })
 
       const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
       expect(matches.length).toBe(1)
@@ -254,7 +254,7 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
         </b:defaultmarkups>
       </body></html>`
 
-      const output = processTemplate(input, { hamlet: { resolveMarkups: false } })
+      const output = processTemplate(input, { hamlet: { resolveMarkups: false, mergeMarkups: true } })
 
       const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
       expect(matches.length).toBe(1)
@@ -322,7 +322,7 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
         </b:defaultmarkups>
       </body></html>`
 
-      const output = processTemplate(input)
+      const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
       // Exactly one <b:defaultmarkups> block
       const count = [...output.matchAll(/<b:defaultmarkups>/g)].length
@@ -346,7 +346,7 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
         <b:defaultmarkups/>
       </body></html>`
 
-      const output = processTemplate(input)
+      const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
       expect(output).toContain('<b:defaultmarkups>')
       expect(output).toContain('</b:defaultmarkups>')
@@ -369,7 +369,7 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
   </body>
 </html>`
 
-      const output = processTemplate(input)
+      const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
 
       // Base indent is 4 spaces
       expect(output).toContain('    <b:defaultmarkups>')
@@ -380,6 +380,126 @@ describe('defaultmarkups Global Resolver and Cascade (Phase 6)', () => {
       expect(output).toContain('        </b:includable>')
       expect(output).toContain('      </b:defaultmarkup>')
       expect(output).toContain('    </b:defaultmarkups>')
+    })
+  })
+
+  describe('mergeMarkups option and precedence', () => {
+    it('preserves multiple <b:defaultmarkups> blocks as authored by default (mergeMarkups: false)', () => {
+      const input = `<html><body>
+        <div id='top'>
+          <b:defaultmarkups>
+            <b:defaultmarkup type='Header'>
+              <b:includable id='title'><h1>Site Title</h1></b:includable>
+            </b:defaultmarkup>
+          </b:defaultmarkups>
+        </div>
+        <div id='bottom'>
+          <b:defaultmarkups>
+            <b:defaultmarkup type='Header'>
+              <b:includable id='description'><p>Site Desc</p></b:includable>
+            </b:defaultmarkup>
+          </b:defaultmarkups>
+        </div>
+      </body></html>`
+
+      const output = processTemplate(input)
+
+      // Both blocks are preserved where authored
+      const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
+      expect(matches.length).toBe(2)
+      expect(output).toContain('<h1>Site Title</h1>')
+      expect(output).toContain('<p>Site Desc</p>')
+    })
+
+    it('consolidates blocks into one when mergeMarkups: true is specified in config', () => {
+      const input = `<html><body>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Header'>
+            <b:includable id='title'><h1>Site Title</h1></b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Header'>
+            <b:includable id='description'><p>Site Desc</p></b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      </body></html>`
+
+      const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
+
+      const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
+      expect(matches.length).toBe(1)
+      expect(output).toContain('<h1>Site Title</h1>')
+      expect(output).toContain('<p>Site Desc</p>')
+    })
+
+    it('root directive h:mergeMarkups="true" overrides config mergeMarkups: false and strips attribute', () => {
+      const input = `<html h:mergeMarkups='true'><body>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>A</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>B</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      </body></html>`
+
+      const output = processTemplate(input, { hamlet: { mergeMarkups: false } })
+
+      const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
+      expect(matches.length).toBe(1)
+      expect(output).toContain('B')
+      expect(output).not.toContain('h:mergeMarkups')
+    })
+
+    it('root directive h:mergeMarkups="false" overrides config mergeMarkups: true', () => {
+      const input = `<html h:mergeMarkups='false'><body>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>A</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>B</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      </body></html>`
+
+      const output = processTemplate(input, { hamlet: { mergeMarkups: true } })
+
+      const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
+      expect(matches.length).toBe(2)
+      expect(output).toContain('A')
+      expect(output).toContain('B')
+      expect(output).not.toContain('h:mergeMarkups')
+    })
+
+    it('does not merge markups when resolveMarkups: false even if mergeMarkups: true', () => {
+      const input = `<html h:resolveMarkups='false' h:mergeMarkups='true'><body>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>A</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Blog'>
+            <b:includable id='post'>B</b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      </body></html>`
+
+      const output = processTemplate(input)
+
+      const matches = [...output.matchAll(/<b:defaultmarkups>/g)]
+      expect(matches.length).toBe(2)
+      expect(output).toContain('A')
+      expect(output).toContain('B')
+      expect(output).not.toContain('h:resolveMarkups')
+      expect(output).not.toContain('h:mergeMarkups')
     })
   })
 })

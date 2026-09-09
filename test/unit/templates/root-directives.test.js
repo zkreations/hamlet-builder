@@ -26,11 +26,12 @@ describe('root-directives module', () => {
     })
 
     it('handles bare attributes as true', () => {
-      const template = `<html h:resolveMarkups><body></body></html>`
+      const template = `<html h:resolveMarkups h:mergeMarkups><body></body></html>`
       const directives = extractRootDirectives(template)
 
       expect(directives).toEqual({
         resolveMarkups: true,
+        mergeMarkups: true,
       })
     })
 

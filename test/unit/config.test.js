@@ -37,6 +37,7 @@ describe('configuration loader', () => {
     expect(configs.hamlet).toEqual({
       recompileOnAnyChange: false,
       resolveMarkups: true,
+      mergeMarkups: false,
       helpers: {},
       plugins: [],
       sourcemap: false,
@@ -76,6 +77,7 @@ describe('configuration loader', () => {
     expect(mockHamletFn).toHaveBeenCalledWith(mockContext)
     expect(configs.hamlet.recompileOnAnyChange).toBe(true)
     expect(configs.hamlet.resolveMarkups).toBe(true)
+    expect(configs.hamlet.mergeMarkups).toBe(false)
     expect(configs.hamlet.plugins).toEqual([]) // Preserved from fallback
     expect(typeof configs.hamlet.helpers.custom).toBe('function')
     expect(configs.theme).toEqual({ siteName: 'Hamlet Test' })

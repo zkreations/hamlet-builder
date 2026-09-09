@@ -3,6 +3,7 @@ import {
   collectDocumentDefaultMarkups,
   expandWidgetIncludables,
   getNativeMarkupsForType,
+  isCleanInDefaultMarkups,
   normalizeBooleanAttributes,
   processTemplate,
   resolveWidgetIncludables,
@@ -60,6 +61,88 @@ describe('widget Includables System (Phase 4)', () => {
       expect(map.get('LinkList').has('item')).toBe(true)
       expect(map.get('Blog').has('customSnippet')).toBe(true)
       expect(map.get('PopularPosts').has('customSnippet')).toBe(true)
+    })
+
+    it('strictly treats only self-closing includables as clean', () => {
+      const xml = `
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Subscribe'>
+            <b:includable id='selfClosing'/>
+            <b:includable id='emptyBlock'></b:includable>
+            <b:includable id='whitespaceBlock'>   \n   </b:includable>
+            <b:includable id='commentBlock'><!-- only comment --></b:includable>
+            <b:includable id='contentBlock'><div>actual markup</div></b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      `
+      const map = collectDocumentDefaultMarkups(xml)
+      expect(isCleanInDefaultMarkups('selfClosing', 'Subscribe', map)).toBe(true)
+      expect(isCleanInDefaultMarkups('emptyBlock', 'Subscribe', map)).toBe(false)
+      expect(isCleanInDefaultMarkups('whitespaceBlock', 'Subscribe', map)).toBe(false)
+      expect(isCleanInDefaultMarkups('commentBlock', 'Subscribe', map)).toBe(false)
+      expect(isCleanInDefaultMarkups('contentBlock', 'Subscribe', map)).toBe(false)
+    })
+
+    it('falls back to All when widgetType does not define the includable', () => {
+      const xml = `
+        <b:defaultmarkups>
+          <b:defaultmarkup type='All'>
+            <b:includable id='globalClean'/>
+            <b:includable id='globalDirty'><div>content</div></b:includable>
+          </b:defaultmarkup>
+          <b:defaultmarkup type='Subscribe'>
+            <b:includable id='feeds'/>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      `
+      const map = collectDocumentDefaultMarkups(xml)
+      expect(isCleanInDefaultMarkups('globalClean', 'Subscribe', map)).toBe(true)
+      expect(isCleanInDefaultMarkups('globalDirty', 'Subscribe', map)).toBe(false)
+      expect(isCleanInDefaultMarkups('feeds', 'Subscribe', map)).toBe(true)
+      expect(isCleanInDefaultMarkups('nonExistent', 'Subscribe', map)).toBe(false)
+    })
+
+    it('prioritizes widget-specific definition over All', () => {
+      const xml = `
+        <b:defaultmarkups>
+          <b:defaultmarkup type='All'>
+            <b:includable id='main'/>
+            <b:includable id='content'><div>Dirty in All</div></b:includable>
+          </b:defaultmarkup>
+          <b:defaultmarkup type='Subscribe'>
+            <b:includable id='main'><div>Dirty in Subscribe</div></b:includable>
+            <b:includable id='content'/>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      `
+      const map = collectDocumentDefaultMarkups(xml)
+      // For Subscribe, specific type overrides All
+      expect(isCleanInDefaultMarkups('main', 'Subscribe', map)).toBe(false)
+      expect(isCleanInDefaultMarkups('content', 'Subscribe', map)).toBe(true)
+      // For other widget types, All applies
+      expect(isCleanInDefaultMarkups('main', 'LinkList', map)).toBe(true)
+      expect(isCleanInDefaultMarkups('content', 'LinkList', map)).toBe(false)
+    })
+
+    it('respects Blogger cascade across multiple b:defaultmarkups blocks (last definition wins)', () => {
+      const xml = `
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Subscribe'>
+            <b:includable id='feeds'><div>Initially dirty</div></b:includable>
+            <b:includable id='item'/>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+        <!-- Second block later in template -->
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Subscribe'>
+            <b:includable id='feeds'/>
+            <b:includable id='item'><div>Became dirty</div></b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      `
+      const map = collectDocumentDefaultMarkups(xml)
+      expect(isCleanInDefaultMarkups('feeds', 'Subscribe', map)).toBe(true)
+      expect(isCleanInDefaultMarkups('item', 'Subscribe', map)).toBe(false)
     })
   })
 
@@ -133,7 +216,36 @@ describe('widget Includables System (Phase 4)', () => {
       expect(output).toContain('<b:includable id=\'content\'/>')
     })
 
-    it('neutralizes includables discovered from theme b:defaultmarkups', () => {
+    it('only neutralizes includables in the widget when they are NOT clean in b:defaultmarkups', () => {
+      const input = `<html>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Subscribe'>
+            <b:includable id='feeds'>
+              <div class='subscribe-links'>
+                <a expr:href='data:blog.feedLinks' target='_blank'>Suscribirse al feed</a>
+              </div>
+            </b:includable>
+            <b:includable id='cleanSnippet'/>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+        <body><b:section id='s'>
+          <b:widget type='Subscribe' id='Sub1' override:main='custom_main'/>
+        </b:section></body>
+      </html>`
+      const output = processTemplate(input)
+      const widgetContent = output.match(/<b:widget\b[^>]+id='Sub1'[^>]*>([\s\S]*?)<\/b:widget>/)?.[1] ?? ''
+
+      // 'main' is overridden
+      expect(widgetContent).toContain('<b:includable id=\'main\'>\n              <b:include name=\'custom_main\'/>\n            </b:includable>')
+      // 'feeds' has content in defaultmarkups, so it MUST be neutralized in widget
+      expect(widgetContent).toContain('<b:includable id=\'feeds\'/>')
+      // 'cleanSnippet' is self-closing in defaultmarkups, so it MUST NOT be duplicated in widget
+      expect(widgetContent).not.toContain('<b:includable id=\'cleanSnippet\'/>')
+      // 'content' (from All) was cleanly generated in defaultmarkups, so it MUST NOT be in widget
+      expect(widgetContent).not.toContain('<b:includable id=\'content\'/>')
+    })
+
+    it('does not inject any neutralized includables when all unhandled includables are clean in b:defaultmarkups', () => {
       const input = `<html>
         <b:defaultmarkups>
           <b:defaultmarkup type='LinkList'>
@@ -142,15 +254,41 @@ describe('widget Includables System (Phase 4)', () => {
           </b:defaultmarkup>
         </b:defaultmarkups>
         <body><b:section id='s'>
-          <b:widget type='LinkList' override:main='custom_main'/>
+          <b:widget type='LinkList' id='LinkList1' override:main='custom_main'/>
         </b:section></body>
       </html>`
       const output = processTemplate(input)
+      const widgetContent = output.match(/<b:widget\b[^>]+id='LinkList1'[^>]*>([\s\S]*?)<\/b:widget>/)?.[1] ?? ''
 
-      expect(output).toContain('<b:includable id=\'main\'>\n              <b:include name=\'custom_main\'/>\n            </b:includable>')
-      expect(output).toContain('<b:includable id=\'content\'/>')
-      expect(output).toContain('<b:includable id=\'list\'/>')
-      expect(output).toContain('<b:includable id=\'item\'/>')
+      expect(widgetContent).toContain('<b:includable id=\'main\'>\n              <b:include name=\'custom_main\'/>\n            </b:includable>')
+      expect(widgetContent).not.toContain('<b:includable id=\'content\'/>')
+      expect(widgetContent).not.toContain('<b:includable id=\'list\'/>')
+      expect(widgetContent).not.toContain('<b:includable id=\'item\'/>')
+    })
+
+    it('neutralizes an includable when the last definition in b:defaultmarkups (placed after widgets) is not self-closing', () => {
+      const input = `<html>
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Subscribe'>
+            <b:includable id='feeds'/>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+        <body><b:section id='s'>
+          <b:widget type='Subscribe' id='Sub1' override:main='custom_main'/>
+        </b:section></body>
+        <!-- Second block placed at the end of the template overriding 'feeds' with content -->
+        <b:defaultmarkups>
+          <b:defaultmarkup type='Subscribe'>
+            <b:includable id='feeds'><div class='trailing'>Dirty definition</div></b:includable>
+          </b:defaultmarkup>
+        </b:defaultmarkups>
+      </html>`
+      const output = processTemplate(input)
+      const widgetContent = output.match(/<b:widget\b[^>]+id='Sub1'[^>]*>([\s\S]*?)<\/b:widget>/)?.[1] ?? ''
+
+      expect(widgetContent).toContain('<b:includable id=\'main\'>\n              <b:include name=\'custom_main\'/>\n            </b:includable>')
+      // Since the last definition in the document was not self-closing, it must be neutralized in the widget
+      expect(widgetContent).toContain('<b:includable id=\'feeds\'/>')
     })
 
     it('preserves explicitly defined includables and neutralizes the rest', () => {

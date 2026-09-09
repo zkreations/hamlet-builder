@@ -133,7 +133,7 @@ describe('multi-variable <b:with> expansion (Fase 2)', () => {
         '    <b:with value=\'1\' var=\'a\'>',
         '      <b:with value=\'2\' var=\'b\'>',
         '        <b:with value=\'3\' var=\'c\'>',
-        '      <div>content</div>',
+        '          <div>content</div>',
         '        </b:with>',
         '      </b:with>',
         '    </b:with>',
@@ -153,9 +153,34 @@ describe('multi-variable <b:with> expansion (Fase 2)', () => {
       const expected = [
         '\t\t<b:with value=\'1\' var=\'first\'>',
         '\t\t\t<b:with value=\'2\' var=\'second\'>',
-        '\t\t\t<span>tabbed</span>',
+        '\t\t\t\t<span>tabbed</span>',
         '\t\t\t</b:with>',
         '\t\t</b:with>',
+      ].join('\n')
+
+      expect(output).toBe(expected)
+    })
+
+    it('correctly shifts multiline nested child content when expanding multiple variables', () => {
+      const input = [
+        '  <b:with var:currentTheme=\'skin:theme.uiScheme\' var:isHomePage=\'data:view.isHomepage\' var:maxPosts=\'10\'>',
+        '    <div class=\'layout-container\'>',
+        '      <aside class=\'theme-info\'></aside>',
+        '    </div>',
+        '  </b:with>',
+      ].join('\n')
+
+      const output = expandMultiWith(input)
+      const expected = [
+        '  <b:with value=\'skin:theme.uiScheme\' var=\'currentTheme\'>',
+        '    <b:with value=\'data:view.isHomepage\' var=\'isHomePage\'>',
+        '      <b:with value=\'10\' var=\'maxPosts\'>',
+        '        <div class=\'layout-container\'>',
+        '          <aside class=\'theme-info\'></aside>',
+        '        </div>',
+        '      </b:with>',
+        '    </b:with>',
+        '  </b:with>',
       ].join('\n')
 
       expect(output).toBe(expected)

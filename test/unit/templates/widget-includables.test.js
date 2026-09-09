@@ -232,6 +232,28 @@ describe('widget Includables System (Phase 4)', () => {
       expect(output).toContain('<b:includable id=\'content\'/>')
     })
 
+    it('preserves clean relative indentation when auto-wrapping direct content with comments', () => {
+      const input = [
+        '    <b:widget type=\'Blog\' id=\'Blog1\' title=\'Blog Posts\' override:post=\'customPostTitle\' locked>',
+        '      <!-- Contenido directo: se envuelve automaticamente en includable id=\'main\' -->',
+        '      <div class=\'blog-posts-wrapper\'>',
+        '        <b:include name=\'post\'/>',
+        '      </div>',
+        '    </b:widget>',
+      ].join('\n')
+
+      const output = expandWidgetIncludables(input)
+
+      expect(output).toContain([
+        '      <b:includable id=\'main\'>',
+        '        <!-- Contenido directo: se envuelve automaticamente en includable id=\'main\' -->',
+        '        <div class=\'blog-posts-wrapper\'>',
+        '          <b:include name=\'post\'/>',
+        '        </div>',
+        '      </b:includable>',
+      ].join('\n'))
+    })
+
     it('throws compile error if widget has explicit main AND direct content outside includables', () => {
       const input = `<html><body><b:section id='s'>
         <b:widget type='HTML' id='HTML1'>

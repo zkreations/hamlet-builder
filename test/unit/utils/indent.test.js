@@ -7,6 +7,7 @@ import {
   reindentBlock,
   shiftIndent,
   stripIndent,
+  trimBlankLines,
 } from '../../../lib/utils/indent.js'
 
 describe('indent utilities', () => {
@@ -262,6 +263,32 @@ describe('indent utilities', () => {
       const input = '<b:includable id=\'empty\'>\n</b:includable>'
       const formatted = formatNestedBlock(input, '  ', '    ')
       expect(formatted).toBe('  <b:includable id=\'empty\'>\n  </b:includable>')
+    })
+  })
+
+  describe('trimBlankLines', () => {
+    it('returns empty string if text is falsy or only whitespace', () => {
+      expect(trimBlankLines('')).toBe('')
+      expect(trimBlankLines(null)).toBe('')
+      expect(trimBlankLines('   \n  \t  \n  ')).toBe('')
+    })
+
+    it('trims leading and trailing blank lines while preserving first line indentation', () => {
+      const input = '\n\n      <!-- comment -->\n      <div>\n        <p>text</p>\n      </div>\n    \n'
+      const expected = '      <!-- comment -->\n      <div>\n        <p>text</p>\n      </div>'
+      expect(trimBlankLines(input)).toBe(expected)
+    })
+
+    it('preserves internal blank lines', () => {
+      const input = '\n  line 1\n\n  line 2\n\n'
+      const expected = '  line 1\n\n  line 2'
+      expect(trimBlankLines(input)).toBe(expected)
+    })
+
+    it('preserves CRLF line endings', () => {
+      const input = '\r\n    line 1\r\n    line 2\r\n'
+      const expected = '    line 1\r\n    line 2'
+      expect(trimBlankLines(input)).toBe(expected)
     })
   })
 })
